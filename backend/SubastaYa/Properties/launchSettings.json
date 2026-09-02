@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SubastaYa": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
