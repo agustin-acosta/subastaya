@@ -1,4 +1,7 @@
+using Application.Interfaces;
+using Application.Queries.ListarSubastas;
 using Infrastructure;
+using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +14,9 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<SubastaYaDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<ISubastaRepository, SubastaRepository>();
+builder.Services.AddScoped<ListarSubastasQueryHandler>();
 
 var app = builder.Build();
 
