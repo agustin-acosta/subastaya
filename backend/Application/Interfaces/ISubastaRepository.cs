@@ -5,4 +5,5 @@ namespace Application.Interfaces;
 public interface ISubastaRepository
 {
     Task<List<Subasta>> ObtenerTodasAsync();
+    Task<Subasta?> ObtenerPorIdAsync(int id);
 }
