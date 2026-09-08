@@ -3,6 +3,7 @@ using Application.Queries.ListarSubastas;
 using Infrastructure;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Application.Queries.ObtenerSubasta;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,7 @@ builder.Services.AddDbContext<SubastaYaDbContext>(options =>
 
 builder.Services.AddScoped<ISubastaRepository, SubastaRepository>();
 builder.Services.AddScoped<ListarSubastasQueryHandler>();
+builder.Services.AddScoped<ObtenerSubastaQueryHandler>();
 
 var app = builder.Build();
 
