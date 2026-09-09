@@ -28,4 +28,27 @@ public class SubastaRepository : ISubastaRepository
             .Include(s => s.Pujas)
             .FirstOrDefaultAsync(s => s.Id == id);
     }
+
+    public async Task<Puja?> ObtenerUltimaPujaAsync(int subastaId)
+    {
+        return await _context.Pujas
+            .Where(p => p.SubastaId == subastaId)
+            .OrderByDescending(p => p.Monto)
+            .FirstOrDefaultAsync();
+    }
+
+    public void ActualizarSubasta(Subasta subasta)
+    {
+        _context.Subastas.Update(subasta);
+    }
+
+    public void AgregarPuja(Puja puja)
+    {
+        _context.Pujas.Add(puja);
+    }
+
+    public void AgregarAuditoria(AuditoriaLog log)
+    {
+        _context.AuditoriaLogs.Add(log);
+    }
 }

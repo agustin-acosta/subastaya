@@ -1,4 +1,5 @@
-﻿using Application.Queries.ListarSubastas;
+﻿using Application.Commands.Ofertar;
+using Application.Queries.ListarSubastas;
 using Application.Queries.ObtenerSubasta;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,13 +11,16 @@ public class SubastasController : ControllerBase
 {
     private readonly ListarSubastasQueryHandler _listarSubastasHandler;
     private readonly ObtenerSubastaQueryHandler _obtenerSubastaHandler;
+    private readonly OfertarCommandHandler _ofertarHandler;
 
     public SubastasController(
         ListarSubastasQueryHandler listarSubastasHandler,
-        ObtenerSubastaQueryHandler obtenerSubastaHandler)
+        ObtenerSubastaQueryHandler obtenerSubastaHandler,
+        OfertarCommandHandler ofertarHandler)
     {
         _listarSubastasHandler = listarSubastasHandler;
         _obtenerSubastaHandler = obtenerSubastaHandler;
+        _ofertarHandler = ofertarHandler;
     }
 
     [HttpGet]
@@ -30,12 +34,23 @@ public class SubastasController : ControllerBase
     public async Task<IActionResult> ObtenerPorId(int id)
     {
         var resultado = await _obtenerSubastaHandler.Handle(new ObtenerSubastaQuery(id));
-
         if (resultado is null)
         {
             return NotFound();
         }
-
         return Ok(resultado);
+    }
+
+    public class OfertarRequest
+    {
+        public int CompradorId { get; set; }
+        public decimal Monto { get; set; }
+    }
+
+    [HttpPost("{id}/pujas")]
+    public async Task<IActionResult> Ofertar(int id, [FromBody] OfertarRequest request)
+    {
+        var pujaId = await _ofertarHandler.Handle(new OfertarCommand(id, request.CompradorId, request.Monto));
+        return CreatedAtAction(nameof(ObtenerPorId), new { id }, new { pujaId });
     }
 }
