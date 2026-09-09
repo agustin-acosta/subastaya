@@ -1,4 +1,6 @@
-﻿using Application.Commands.Ofertar;
+﻿using Application.Commands.CrearSubasta;
+using Application.Commands.Ofertar;
+using Application.Dtos;
 using Application.Queries.ListarSubastas;
 using Application.Queries.ObtenerSubasta;
 using Microsoft.AspNetCore.Mvc;
@@ -12,15 +14,18 @@ public class SubastasController : ControllerBase
     private readonly ListarSubastasQueryHandler _listarSubastasHandler;
     private readonly ObtenerSubastaQueryHandler _obtenerSubastaHandler;
     private readonly OfertarCommandHandler _ofertarHandler;
+    private readonly CrearSubastaCommandHandler _crearSubastaHandler;
 
     public SubastasController(
         ListarSubastasQueryHandler listarSubastasHandler,
         ObtenerSubastaQueryHandler obtenerSubastaHandler,
-        OfertarCommandHandler ofertarHandler)
+        OfertarCommandHandler ofertarHandler,
+        CrearSubastaCommandHandler crearSubastaHandler)
     {
         _listarSubastasHandler = listarSubastasHandler;
         _obtenerSubastaHandler = obtenerSubastaHandler;
         _ofertarHandler = ofertarHandler;
+        _crearSubastaHandler = crearSubastaHandler;
     }
 
     [HttpGet]
@@ -39,6 +44,18 @@ public class SubastasController : ControllerBase
             return NotFound();
         }
         return Ok(resultado);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Crear([FromBody] CrearSubastaDto dto)
+    {
+        var comando = new CrearSubastaCommand(
+            dto.VendedorId, dto.CategoriaId, dto.Titulo, dto.Descripcion,
+            dto.UrlImagen, dto.PrecioBase, dto.IncrementoMinimo,
+            dto.FechaInicio, dto.FechaFin);
+
+        var subastaId = await _crearSubastaHandler.Handle(comando);
+        return CreatedAtAction(nameof(ObtenerPorId), new { id = subastaId }, new { id = subastaId });
     }
 
     public class OfertarRequest
