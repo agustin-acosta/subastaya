@@ -2,5 +2,9 @@
 
 public class ListarSubastasQuery
 {
-    // sin parámetros por ahora trae todas las subastas.
+    public string? Estado { get; set; }
+    public ListarSubastasQuery(string? estado = null)
+    {
+        Estado = estado;
+    }
 }

@@ -4,7 +4,7 @@ namespace Application.Interfaces;
 
 public interface ISubastaRepository
 {
-    Task<List<Subasta>> ObtenerTodasAsync();
+    Task<List<Subasta>> ObtenerTodasAsync(string? estado);
     Task<Subasta?> ObtenerPorIdAsync(int id);
     Task<Puja?> ObtenerUltimaPujaAsync(int subastaId);
     void ActualizarSubasta(Subasta subasta);

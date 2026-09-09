@@ -14,7 +14,7 @@ public class ListarSubastasQueryHandler
 
     public async Task<List<SubastaListItemDto>> Handle(ListarSubastasQuery query)
     {
-        var subastas = await _subastaRepository.ObtenerTodasAsync();
+        var subastas = await _subastaRepository.ObtenerTodasAsync(query.Estado);
 
         return subastas.Select(s => new SubastaListItemDto
         {

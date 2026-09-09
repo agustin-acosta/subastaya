@@ -29,9 +29,9 @@ public class SubastasController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> Listar()
+    public async Task<IActionResult> Listar([FromQuery] string? estado)
     {
-        var resultado = await _listarSubastasHandler.Handle(new ListarSubastasQuery());
+        var resultado = await _listarSubastasHandler.Handle(new ListarSubastasQuery(estado));
         return Ok(resultado);
     }
 

@@ -13,11 +13,16 @@ public class SubastaRepository : ISubastaRepository
         _context = context;
     }
 
-    public async Task<List<Subasta>> ObtenerTodasAsync()
+    public async Task<List<Subasta>> ObtenerTodasAsync(string? estado)
     {
-        return await _context.Subastas
-            .Include(s => s.Categoria)
-            .ToListAsync();
+        var query = _context.Subastas.Include(s => s.Categoria).AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(estado) && Enum.TryParse<EstadoSubasta>(estado, true, out var estadoParseado))
+        {
+            query = query.Where(s => s.Estado == estadoParseado);
+        }
+
+        return await query.ToListAsync();
     }
 
     public async Task<Subasta?> ObtenerPorIdAsync(int id)
