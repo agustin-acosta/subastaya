@@ -1,7 +1,9 @@
 using Api.Middleware;
+using Application.Commands.CrearSubasta;
 using Application.Commands.Ofertar;
 using Application.Interfaces;
 using Application.Queries.ListarSubastas;
+using Application.Queries.ObtenerBalance;
 using Application.Queries.ObtenerSubasta;
 using Infrastructure;
 using Infrastructure.Repositories;
@@ -23,6 +25,10 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ListarSubastasQueryHandler>();
 builder.Services.AddScoped<ObtenerSubastaQueryHandler>();
 builder.Services.AddScoped<OfertarCommandHandler>();
+builder.Services.AddScoped<ObtenerBalanceQueryHandler>();
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
+builder.Services.AddScoped<CrearSubastaCommandHandler>();
 
 var app = builder.Build();
 

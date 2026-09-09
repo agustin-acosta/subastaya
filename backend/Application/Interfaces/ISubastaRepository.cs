@@ -10,4 +10,5 @@ public interface ISubastaRepository
     void ActualizarSubasta(Subasta subasta);
     void AgregarPuja(Puja puja);
     void AgregarAuditoria(AuditoriaLog log);
+    void Agregar(Subasta subasta);
 }

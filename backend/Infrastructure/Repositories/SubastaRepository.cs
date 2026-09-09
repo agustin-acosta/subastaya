@@ -51,4 +51,8 @@ public class SubastaRepository : ISubastaRepository
     {
         _context.AuditoriaLogs.Add(log);
     }
+    public void Agregar(Subasta subasta)
+    {
+        _context.Subastas.Add(subasta);
+    }
 }
