@@ -3,4 +3,5 @@
   <Project Path="Application/Application.csproj" />
   <Project Path="Domain/Domain.csproj" />
   <Project Path="Infrastructure/Infrastructure.csproj" />
+  <Project Path="PruebaConcurrencia/PruebaConcurrencia.csproj" Id="b93b1abb-68b1-4422-820a-7068f4e9773a" />
 </Solution>
