@@ -65,9 +65,12 @@ public class OfertarCommandHandler
 
         // Identificar al líder anterior (si existe) para liberar su retención.
         var pujaAnterior = await _subastaRepository.ObtenerUltimaPujaAsync(subasta.Id);
-        if (pujaAnterior is not null && pujaAnterior.CompradorId != command.CompradorId)
+        if (pujaAnterior is not null)
         {
-            var billeteraLiderAnterior = await _billeteraRepository.ObtenerPorUsuarioIdAsync(pujaAnterior.CompradorId);
+            var billeteraLiderAnterior = pujaAnterior.CompradorId == command.CompradorId
+                ? billeteraComprador // es la misma persona, ya la tenemos cargada
+                : await _billeteraRepository.ObtenerPorUsuarioIdAsync(pujaAnterior.CompradorId);
+
             if (billeteraLiderAnterior is not null)
             {
                 billeteraLiderAnterior.SaldoRetenido -= pujaAnterior.Monto;
