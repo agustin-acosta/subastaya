@@ -7,8 +7,11 @@ public interface ISubastaRepository
     Task<List<Subasta>> ObtenerTodasAsync(string? estado);
     Task<Subasta?> ObtenerPorIdAsync(int id);
     Task<Puja?> ObtenerUltimaPujaAsync(int subastaId);
+    Task<List<Subasta>> ObtenerVencidasSinLiquidarAsync(DateTime ahora);
+    Task<Puja?> ObtenerPujaGanadoraAsync(int subastaId);
     void ActualizarSubasta(Subasta subasta);
     void AgregarPuja(Puja puja);
     void AgregarAuditoria(AuditoriaLog log);
     void Agregar(Subasta subasta);
+    void Eliminar(Subasta subasta);
 }

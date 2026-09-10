@@ -60,4 +60,22 @@ public class SubastaRepository : ISubastaRepository
     {
         _context.Subastas.Add(subasta);
     }
+    public async Task<List<Subasta>> ObtenerVencidasSinLiquidarAsync(DateTime ahora)
+    {
+        return await _context.Subastas
+            .Where(s => s.FechaFin < ahora &&
+                        (s.Estado == EstadoSubasta.Activa || s.Estado == EstadoSubasta.Programada))
+            .ToListAsync();
+    }
+    public async Task<Puja?> ObtenerPujaGanadoraAsync(int subastaId)
+    {
+        return await _context.Pujas
+            .Where(p => p.SubastaId == subastaId)
+            .OrderByDescending(p => p.Monto)
+            .FirstOrDefaultAsync();
+    }
+    public void Eliminar(Subasta subasta)
+    {
+        _context.Subastas.Remove(subasta);
+    }
 }
