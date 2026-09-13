@@ -12,11 +12,12 @@ public class ListarSubastasQueryHandler
         _subastaRepository = subastaRepository;
     }
 
-    public async Task<List<SubastaListItemDto>> Handle(ListarSubastasQuery query)
+    public async Task<PaginacionDto<SubastaListItemDto>> Handle(ListarSubastasQuery query)
     {
-        var subastas = await _subastaRepository.ObtenerTodasAsync(query.Estado);
+        var subastas = await _subastaRepository.ObtenerTodasAsync(query.Estado, query.Pagina, query.TamanoPagina);
+        var total = await _subastaRepository.ContarAsync(query.Estado);
 
-        return subastas.Select(s => new SubastaListItemDto
+        var items = subastas.Select(s => new SubastaListItemDto
         {
             Id = s.Id,
             Titulo = s.Titulo,
@@ -27,5 +28,14 @@ public class ListarSubastasQueryHandler
             FechaFin = s.FechaFin,
             Estado = s.Estado.ToString()
         }).ToList();
+
+        return new PaginacionDto<SubastaListItemDto>
+        {
+            Items = items,
+            PaginaActual = query.Pagina,
+            TamanoPagina = query.TamanoPagina,
+            TotalItems = total,
+            TotalPaginas = (int)Math.Ceiling(total / (double)query.TamanoPagina)
+        };
     }
 }

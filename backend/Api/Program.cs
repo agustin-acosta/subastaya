@@ -32,12 +32,26 @@ builder.Services.AddScoped<ObtenerBalanceQueryHandler>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddScoped<CrearSubastaCommandHandler>();
+<<<<<<< HEAD
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("PermitirFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+=======
 builder.Services.AddHostedService<Infrastructure.Workers.LiquidacionWorker>();
 builder.Services.AddScoped<DepositarCommandHandler>();
 builder.Services.AddScoped<ModificarSubastaCommandHandler>();
 builder.Services.AddScoped<EliminarSubastaCommandHandler>();
+>>>>>>> d7b8f7fad8cac88cfd89b395df862ee7a219c6a7
 
 var app = builder.Build();
+
+app.UseCors("PermitirFrontend");
 
 if (app.Environment.IsDevelopment())
 {
