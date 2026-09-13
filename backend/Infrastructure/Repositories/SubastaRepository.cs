@@ -74,9 +74,38 @@ public class SubastaRepository : ISubastaRepository
             .FirstOrDefaultAsync();
     }
 
+<<<<<<< HEAD
     public void Agregar(Subasta subasta) => _context.Subastas.Add(subasta);
     public void ActualizarSubasta(Subasta subasta) => _context.Subastas.Update(subasta);
     public void AgregarPuja(Puja puja) => _context.Pujas.Add(puja);
     public void AgregarAuditoria(AuditoriaLog log) => _context.AuditoriaLogs.Add(log);
     public void Eliminar(Subasta subasta) => _context.Subastas.Remove(subasta);
+=======
+    public void AgregarAuditoria(AuditoriaLog log)
+    {
+        _context.AuditoriaLogs.Add(log);
+    }
+    public void Agregar(Subasta subasta)
+    {
+        _context.Subastas.Add(subasta);
+    }
+    public async Task<List<Subasta>> ObtenerVencidasSinLiquidarAsync(DateTime ahora)
+    {
+        return await _context.Subastas
+            .Where(s => s.FechaFin < ahora &&
+                        (s.Estado == EstadoSubasta.Activa || s.Estado == EstadoSubasta.Programada))
+            .ToListAsync();
+    }
+    public async Task<Puja?> ObtenerPujaGanadoraAsync(int subastaId)
+    {
+        return await _context.Pujas
+            .Where(p => p.SubastaId == subastaId)
+            .OrderByDescending(p => p.Monto)
+            .FirstOrDefaultAsync();
+    }
+    public void Eliminar(Subasta subasta)
+    {
+        _context.Subastas.Remove(subasta);
+    }
+>>>>>>> d7b8f7fad8cac88cfd89b395df862ee7a219c6a7
 }

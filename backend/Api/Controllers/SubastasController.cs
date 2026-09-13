@@ -1,4 +1,6 @@
 ﻿using Application.Commands.CrearSubasta;
+using Application.Commands.EliminarSubasta;
+using Application.Commands.ModificarSubasta;
 using Application.Commands.Ofertar;
 using Application.Dtos;
 using Application.Queries.ListarSubastas;
@@ -15,17 +17,23 @@ public class SubastasController : ControllerBase
     private readonly ObtenerSubastaQueryHandler _obtenerSubastaHandler;
     private readonly OfertarCommandHandler _ofertarHandler;
     private readonly CrearSubastaCommandHandler _crearSubastaHandler;
+    private readonly ModificarSubastaCommandHandler _modificarSubastaHandler;
+    private readonly EliminarSubastaCommandHandler _eliminarSubastaHandler;
 
     public SubastasController(
         ListarSubastasQueryHandler listarSubastasHandler,
         ObtenerSubastaQueryHandler obtenerSubastaHandler,
         OfertarCommandHandler ofertarHandler,
-        CrearSubastaCommandHandler crearSubastaHandler)
+        CrearSubastaCommandHandler crearSubastaHandler,
+        ModificarSubastaCommandHandler modificarSubastaHandler,
+        EliminarSubastaCommandHandler eliminarSubastaHandler)
     {
         _listarSubastasHandler = listarSubastasHandler;
         _obtenerSubastaHandler = obtenerSubastaHandler;
         _ofertarHandler = ofertarHandler;
         _crearSubastaHandler = crearSubastaHandler;
+        _modificarSubastaHandler = modificarSubastaHandler;
+        _eliminarSubastaHandler = eliminarSubastaHandler;
     }
 
     [HttpGet]
@@ -69,5 +77,23 @@ public class SubastasController : ControllerBase
     {
         var pujaId = await _ofertarHandler.Handle(new OfertarCommand(id, request.CompradorId, request.Monto));
         return CreatedAtAction(nameof(ObtenerPorId), new { id }, new { pujaId });
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Modificar(int id, [FromBody] ModificarSubastaDto dto)
+    {
+        var comando = new ModificarSubastaCommand(
+            id, dto.Titulo, dto.Descripcion, dto.UrlImagen,
+            dto.PrecioBase, dto.IncrementoMinimo, dto.FechaFin);
+
+        await _modificarSubastaHandler.Handle(comando);
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Eliminar(int id)
+    {
+        await _eliminarSubastaHandler.Handle(new EliminarSubastaCommand(id));
+        return NoContent();
     }
 }
