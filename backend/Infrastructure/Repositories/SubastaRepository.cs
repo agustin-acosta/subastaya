@@ -13,16 +13,32 @@ public class SubastaRepository : ISubastaRepository
         _context = context;
     }
 
-    public async Task<List<Subasta>> ObtenerTodasAsync(string? estado)
+    private IQueryable<Subasta> AplicarFiltroEstado(IQueryable<Subasta> query, string? estado)
     {
-        var query = _context.Subastas.Include(s => s.Categoria).AsQueryable();
-
         if (!string.IsNullOrWhiteSpace(estado) && Enum.TryParse<EstadoSubasta>(estado, true, out var estadoParseado))
         {
             query = query.Where(s => s.Estado == estadoParseado);
         }
+        return query;
+    }
 
-        return await query.ToListAsync();
+    public async Task<List<Subasta>> ObtenerTodasAsync(string? estado, int pagina, int tamanoPagina)
+    {
+        var query = _context.Subastas.Include(s => s.Categoria).AsQueryable();
+        query = AplicarFiltroEstado(query, estado);
+
+        return await query
+            .OrderByDescending(s => s.Id)
+            .Skip((pagina - 1) * tamanoPagina)
+            .Take(tamanoPagina)
+            .ToListAsync();
+    }
+
+    public async Task<int> ContarAsync(string? estado)
+    {
+        var query = _context.Subastas.AsQueryable();
+        query = AplicarFiltroEstado(query, estado);
+        return await query.CountAsync();
     }
 
     public async Task<Subasta?> ObtenerPorIdAsync(int id)
@@ -42,22 +58,25 @@ public class SubastaRepository : ISubastaRepository
             .FirstOrDefaultAsync();
     }
 
-    public void ActualizarSubasta(Subasta subasta)
+    public async Task<List<Subasta>> ObtenerVencidasSinLiquidarAsync(DateTime ahora)
     {
-        _context.Subastas.Update(subasta);
+        return await _context.Subastas
+            .Where(s => s.FechaFin < ahora &&
+                        (s.Estado == EstadoSubasta.Activa || s.Estado == EstadoSubasta.Programada))
+            .ToListAsync();
     }
 
-    public void AgregarPuja(Puja puja)
+    public async Task<Puja?> ObtenerPujaGanadoraAsync(int subastaId)
     {
-        _context.Pujas.Add(puja);
+        return await _context.Pujas
+            .Where(p => p.SubastaId == subastaId)
+            .OrderByDescending(p => p.Monto)
+            .FirstOrDefaultAsync();
     }
 
-    public void AgregarAuditoria(AuditoriaLog log)
-    {
-        _context.AuditoriaLogs.Add(log);
-    }
-    public void Agregar(Subasta subasta)
-    {
-        _context.Subastas.Add(subasta);
-    }
+    public void Agregar(Subasta subasta) => _context.Subastas.Add(subasta);
+    public void ActualizarSubasta(Subasta subasta) => _context.Subastas.Update(subasta);
+    public void AgregarPuja(Puja puja) => _context.Pujas.Add(puja);
+    public void AgregarAuditoria(AuditoriaLog log) => _context.AuditoriaLogs.Add(log);
+    public void Eliminar(Subasta subasta) => _context.Subastas.Remove(subasta);
 }
