@@ -37,16 +37,16 @@ public class SubastasController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> Listar([FromQuery] string? estado, [FromQuery] int pagina = 1, [FromQuery] int tamanoPagina = 10)
+    public async Task<IActionResult> Listar([FromQuery] string? estado, [FromQuery] int pagina = 1, [FromQuery] int tamanoPagina = 10, CancellationToken cancellationToken = default)
     {
-        var resultado = await _listarSubastasHandler.Handle(new ListarSubastasQuery(estado, pagina, tamanoPagina));
+        var resultado = await _listarSubastasHandler.Handle(new ListarSubastasQuery(estado, pagina, tamanoPagina), cancellationToken);
         return Ok(resultado);
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> ObtenerPorId(int id)
+    public async Task<IActionResult> ObtenerPorId(int id, CancellationToken cancellationToken)
     {
-        var resultado = await _obtenerSubastaHandler.Handle(new ObtenerSubastaQuery(id));
+        var resultado = await _obtenerSubastaHandler.Handle(new ObtenerSubastaQuery(id), cancellationToken);
         if (resultado is null)
         {
             return NotFound();
@@ -55,14 +55,14 @@ public class SubastasController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Crear([FromBody] CrearSubastaDto dto)
+    public async Task<IActionResult> Crear([FromBody] CrearSubastaDto dto, CancellationToken cancellationToken)
     {
         var comando = new CrearSubastaCommand(
             dto.VendedorId, dto.CategoriaId, dto.Titulo, dto.Descripcion,
             dto.UrlImagen, dto.PrecioBase, dto.IncrementoMinimo,
             dto.FechaInicio, dto.FechaFin);
 
-        var subastaId = await _crearSubastaHandler.Handle(comando);
+        var subastaId = await _crearSubastaHandler.Handle(comando, cancellationToken);
         return CreatedAtAction(nameof(ObtenerPorId), new { id = subastaId }, new { id = subastaId });
     }
 
@@ -73,27 +73,27 @@ public class SubastasController : ControllerBase
     }
 
     [HttpPost("{id}/pujas")]
-    public async Task<IActionResult> Ofertar(int id, [FromBody] OfertarRequest request)
+    public async Task<IActionResult> Ofertar(int id, [FromBody] OfertarRequest request, CancellationToken cancellationToken)
     {
-        var pujaId = await _ofertarHandler.Handle(new OfertarCommand(id, request.CompradorId, request.Monto));
+        var pujaId = await _ofertarHandler.Handle(new OfertarCommand(id, request.CompradorId, request.Monto), cancellationToken);
         return CreatedAtAction(nameof(ObtenerPorId), new { id }, new { pujaId });
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Modificar(int id, [FromBody] ModificarSubastaDto dto)
+    public async Task<IActionResult> Modificar(int id, [FromBody] ModificarSubastaDto dto, CancellationToken cancellationToken)
     {
         var comando = new ModificarSubastaCommand(
             id, dto.Titulo, dto.Descripcion, dto.UrlImagen,
             dto.PrecioBase, dto.IncrementoMinimo, dto.FechaFin);
 
-        await _modificarSubastaHandler.Handle(comando);
+        await _modificarSubastaHandler.Handle(comando, cancellationToken);
         return NoContent();
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Eliminar(int id)
+    public async Task<IActionResult> Eliminar(int id, CancellationToken cancellationToken)
     {
-        await _eliminarSubastaHandler.Handle(new EliminarSubastaCommand(id));
+        await _eliminarSubastaHandler.Handle(new EliminarSubastaCommand(id), cancellationToken);
         return NoContent();
     }
 }

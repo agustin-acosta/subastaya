@@ -27,11 +27,11 @@ public class LiquidacionWorker : BackgroundService
                 var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
                 var ahora = DateTime.UtcNow;
-                var vencidas = await subastaRepository.ObtenerVencidasSinLiquidarAsync(ahora);
+                var vencidas = await subastaRepository.ObtenerVencidasSinLiquidarAsync(ahora, stoppingToken);
 
                 foreach (var subasta in vencidas)
                 {
-                    var pujaGanadora = await subastaRepository.ObtenerPujaGanadoraAsync(subasta.Id);
+                    var pujaGanadora = await subastaRepository.ObtenerPujaGanadoraAsync(subasta.Id, stoppingToken);
 
                     if (pujaGanadora is null)
                     {
@@ -51,16 +51,14 @@ public class LiquidacionWorker : BackgroundService
                     {
                         subasta.Estado = EstadoSubasta.Finalizada;
 
-                        var billeteraComprador = await billeteraRepository.ObtenerPorUsuarioIdAsync(pujaGanadora.CompradorId);
-                        var billeteraVendedor = await billeteraRepository.ObtenerPorUsuarioIdAsync(subasta.VendedorId);
+                        var billeteraComprador = await billeteraRepository.ObtenerPorUsuarioIdAsync(pujaGanadora.CompradorId, stoppingToken);
+                        var billeteraVendedor = await billeteraRepository.ObtenerPorUsuarioIdAsync(subasta.VendedorId, stoppingToken);
 
                         if (billeteraComprador is not null && billeteraVendedor is not null)
                         {
-                            // el comprador ya tenia el monto retenido, ahora se lo debita del total.
                             billeteraComprador.SaldoTotal -= pujaGanadora.Monto;
                             billeteraComprador.SaldoRetenido -= pujaGanadora.Monto;
 
-                            // el vendedor recibe el monto.
                             billeteraVendedor.SaldoTotal += pujaGanadora.Monto;
 
                             billeteraRepository.AgregarMovimiento(new TransaccionLedger
@@ -98,7 +96,7 @@ public class LiquidacionWorker : BackgroundService
 
                 if (vencidas.Count > 0)
                 {
-                    await unitOfWork.SaveChangesAsync();
+                    await unitOfWork.SaveChangesAsync(stoppingToken);
                 }
             }
 

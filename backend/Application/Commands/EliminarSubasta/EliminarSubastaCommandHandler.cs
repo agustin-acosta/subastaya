@@ -14,9 +14,9 @@ public class EliminarSubastaCommandHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task Handle(EliminarSubastaCommand command)
+    public async Task Handle(EliminarSubastaCommand command, CancellationToken cancellationToken)
     {
-        var subasta = await _subastaRepository.ObtenerPorIdAsync(command.SubastaId);
+        var subasta = await _subastaRepository.ObtenerPorIdAsync(command.SubastaId, cancellationToken);
         if (subasta is null)
         {
             throw new KeyNotFoundException("La subasta no existe.");
@@ -28,6 +28,6 @@ public class EliminarSubastaCommandHandler
         }
 
         _subastaRepository.Eliminar(subasta);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

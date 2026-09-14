@@ -4,6 +4,6 @@ namespace Application.Interfaces;
 
 public interface IBilleteraRepository
 {
-    Task<Billetera?> ObtenerPorUsuarioIdAsync(int usuarioId);
+    Task<Billetera?> ObtenerPorUsuarioIdAsync(int usuarioId, CancellationToken cancellationToken);
     void AgregarMovimiento(TransaccionLedger movimiento);
 }

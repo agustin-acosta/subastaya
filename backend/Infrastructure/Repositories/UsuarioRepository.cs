@@ -12,8 +12,8 @@ public class UsuarioRepository : IUsuarioRepository
         _context = context;
     }
 
-    public async Task<bool> ExisteAsync(int usuarioId)
+    public async Task<bool> ExisteAsync(int usuarioId, CancellationToken cancellationToken)
     {
-        return await _context.Usuarios.AnyAsync(u => u.Id == usuarioId);
+        return await _context.Usuarios.AnyAsync(u => u.Id == usuarioId, cancellationToken);
     }
 }

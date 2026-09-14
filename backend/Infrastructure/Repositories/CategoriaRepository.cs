@@ -12,8 +12,8 @@ public class CategoriaRepository : ICategoriaRepository
         _context = context;
     }
 
-    public async Task<bool> ExisteAsync(int categoriaId)
+    public async Task<bool> ExisteAsync(int categoriaId, CancellationToken cancellationToken)
     {
-        return await _context.Categorias.AnyAsync(c => c.Id == categoriaId);
+        return await _context.Categorias.AnyAsync(c => c.Id == categoriaId, cancellationToken);
     }
 }

@@ -14,9 +14,9 @@ public class ModificarSubastaCommandHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task Handle(ModificarSubastaCommand command)
+    public async Task Handle(ModificarSubastaCommand command, CancellationToken cancellationToken)
     {
-        var subasta = await _subastaRepository.ObtenerPorIdAsync(command.SubastaId);
+        var subasta = await _subastaRepository.ObtenerPorIdAsync(command.SubastaId, cancellationToken);
         if (subasta is null)
         {
             throw new KeyNotFoundException("La subasta no existe.");
@@ -44,6 +44,6 @@ public class ModificarSubastaCommandHandler
         subasta.IncrementoMinimo = command.IncrementoMinimo;
         subasta.FechaFin = command.FechaFin;
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

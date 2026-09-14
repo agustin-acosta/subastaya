@@ -23,16 +23,14 @@ public class OfertarCommandHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<int> Handle(OfertarCommand command)
+    public async Task<int> Handle(OfertarCommand command, CancellationToken cancellationToken)
     {
-        var subasta = await _subastaRepository.ObtenerPorIdAsync(command.SubastaId);
+        var subasta = await _subastaRepository.ObtenerPorIdAsync(command.SubastaId, cancellationToken);
         if (subasta is null)
         {
             throw new KeyNotFoundException("La subasta no existe.");
         }
 
-        // Regla propia (PROPUESTA, no exigida por la consigna): el vendedor
-        // no puede pujar en su propia subasta.
         if (subasta.VendedorId == command.CompradorId)
         {
             throw new OperacionInvalidaException("No podés ofertar en tu propia subasta.");
@@ -52,7 +50,7 @@ public class OfertarCommandHandler
                 $"El monto debe ser al menos {montoMinimoRequerido:C}.");
         }
 
-        var billeteraComprador = await _billeteraRepository.ObtenerPorUsuarioIdAsync(command.CompradorId);
+        var billeteraComprador = await _billeteraRepository.ObtenerPorUsuarioIdAsync(command.CompradorId, cancellationToken);
         if (billeteraComprador is null)
         {
             throw new KeyNotFoundException("El usuario comprador no existe.");
@@ -63,13 +61,12 @@ public class OfertarCommandHandler
             throw new SaldoInsuficienteException("Saldo disponible insuficiente para esta oferta.");
         }
 
-        // Identificar al líder anterior (si existe) para liberar su retención.
-        var pujaAnterior = await _subastaRepository.ObtenerUltimaPujaAsync(subasta.Id);
+        var pujaAnterior = await _subastaRepository.ObtenerUltimaPujaAsync(subasta.Id, cancellationToken);
         if (pujaAnterior is not null)
         {
             var billeteraLiderAnterior = pujaAnterior.CompradorId == command.CompradorId
-                ? billeteraComprador // es la misma persona, ya la tenemos cargada
-                : await _billeteraRepository.ObtenerPorUsuarioIdAsync(pujaAnterior.CompradorId);
+                ? billeteraComprador
+                : await _billeteraRepository.ObtenerPorUsuarioIdAsync(pujaAnterior.CompradorId, cancellationToken);
 
             if (billeteraLiderAnterior is not null)
             {
@@ -86,7 +83,6 @@ public class OfertarCommandHandler
             }
         }
 
-        // Retener el monto del nuevo líder (una única vez).
         billeteraComprador.SaldoRetenido += command.Monto;
 
         _billeteraRepository.AgregarMovimiento(new TransaccionLedger
@@ -98,7 +94,6 @@ public class OfertarCommandHandler
             SubastaId = subasta.Id
         });
 
-        // Crear la nueva puja.
         var nuevaPuja = new Puja
         {
             SubastaId = subasta.Id,
@@ -108,10 +103,8 @@ public class OfertarCommandHandler
         };
         _subastaRepository.AgregarPuja(nuevaPuja);
 
-        // Actualizar el monto líder de la subasta.
         subasta.PujaActualMonto = command.Monto;
 
-        // Anti-sniping: si estamos dentro de la ventana crítica, extendemos.
         var tiempoRestante = subasta.FechaFin - ahora;
         if (tiempoRestante.TotalSeconds <= SegundosVentanaAntiSniping)
         {
@@ -128,11 +121,7 @@ public class OfertarCommandHandler
             });
         }
 
-        // Este es el punto crítico: acá EF Core compara el Version de cada fila
-        // trackeada contra el valor que tenía cuando la leímos al principio.
-        // Si alguien más ya modificó Subasta o alguna Billetera mientras tanto,
-        // esto lanza DbUpdateConcurrencyException.
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return nuevaPuja.Id;
     }

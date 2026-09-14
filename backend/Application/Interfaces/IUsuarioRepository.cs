@@ -2,5 +2,5 @@
 
 public interface IUsuarioRepository
 {
-    Task<bool> ExisteAsync(int usuarioId);
+    Task<bool> ExisteAsync(int usuarioId, CancellationToken cancellationToken);
 }
