@@ -22,7 +22,7 @@ public class SubastaRepository : ISubastaRepository
         return query;
     }
 
-    public async Task<List<Subasta>> ObtenerTodasAsync(string? estado, int pagina, int tamanoPagina)
+    public async Task<List<Subasta>> ObtenerTodasAsync(string? estado, int pagina, int tamanoPagina, CancellationToken cancellationToken)
     {
         var query = _context.Subastas.Include(s => s.Categoria).AsQueryable();
         query = AplicarFiltroEstado(query, estado);
@@ -31,47 +31,47 @@ public class SubastaRepository : ISubastaRepository
             .OrderByDescending(s => s.Id)
             .Skip((pagina - 1) * tamanoPagina)
             .Take(tamanoPagina)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<int> ContarAsync(string? estado)
+    public async Task<int> ContarAsync(string? estado, CancellationToken cancellationToken)
     {
         var query = _context.Subastas.AsQueryable();
         query = AplicarFiltroEstado(query, estado);
-        return await query.CountAsync();
+        return await query.CountAsync(cancellationToken);
     }
 
-    public async Task<Subasta?> ObtenerPorIdAsync(int id)
+    public async Task<Subasta?> ObtenerPorIdAsync(int id, CancellationToken cancellationToken)
     {
         return await _context.Subastas
             .Include(s => s.Categoria)
             .Include(s => s.Vendedor)
             .Include(s => s.Pujas)
-            .FirstOrDefaultAsync(s => s.Id == id);
+            .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
     }
 
-    public async Task<Puja?> ObtenerUltimaPujaAsync(int subastaId)
+    public async Task<Puja?> ObtenerUltimaPujaAsync(int subastaId, CancellationToken cancellationToken)
     {
         return await _context.Pujas
             .Where(p => p.SubastaId == subastaId)
             .OrderByDescending(p => p.Monto)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<List<Subasta>> ObtenerVencidasSinLiquidarAsync(DateTime ahora)
+    public async Task<List<Subasta>> ObtenerVencidasSinLiquidarAsync(DateTime ahora, CancellationToken cancellationToken)
     {
         return await _context.Subastas
             .Where(s => s.FechaFin < ahora &&
                         (s.Estado == EstadoSubasta.Activa || s.Estado == EstadoSubasta.Programada))
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<Puja?> ObtenerPujaGanadoraAsync(int subastaId)
+    public async Task<Puja?> ObtenerPujaGanadoraAsync(int subastaId, CancellationToken cancellationToken)
     {
         return await _context.Pujas
             .Where(p => p.SubastaId == subastaId)
             .OrderByDescending(p => p.Monto)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     public void Agregar(Subasta subasta) => _context.Subastas.Add(subasta);

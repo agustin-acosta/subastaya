@@ -13,10 +13,10 @@ public class BilleteraRepository : IBilleteraRepository
         _context = context;
     }
 
-    public async Task<Billetera?> ObtenerPorUsuarioIdAsync(int usuarioId)
+    public async Task<Billetera?> ObtenerPorUsuarioIdAsync(int usuarioId, CancellationToken cancellationToken)
     {
         return await _context.Billeteras
-            .FirstOrDefaultAsync(b => b.UsuarioId == usuarioId);
+            .FirstOrDefaultAsync(b => b.UsuarioId == usuarioId, cancellationToken);
     }
 
     public void AgregarMovimiento(TransaccionLedger movimiento)

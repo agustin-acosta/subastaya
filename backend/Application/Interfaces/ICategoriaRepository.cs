@@ -2,5 +2,5 @@
 
 public interface ICategoriaRepository
 {
-    Task<bool> ExisteAsync(int categoriaId);
+    Task<bool> ExisteAsync(int categoriaId, CancellationToken cancellationToken);
 }

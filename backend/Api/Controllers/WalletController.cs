@@ -21,9 +21,9 @@ public class WalletController : ControllerBase
     }
 
     [HttpGet("balance")]
-    public async Task<IActionResult> ObtenerBalance([FromQuery] int usuarioId)
+    public async Task<IActionResult> ObtenerBalance([FromQuery] int usuarioId, CancellationToken cancellationToken)
     {
-        var resultado = await _obtenerBalanceHandler.Handle(new ObtenerBalanceQuery(usuarioId));
+        var resultado = await _obtenerBalanceHandler.Handle(new ObtenerBalanceQuery(usuarioId), cancellationToken);
         if (resultado is null)
         {
             return NotFound();
@@ -32,9 +32,9 @@ public class WalletController : ControllerBase
     }
 
     [HttpPost("deposit")]
-    public async Task<IActionResult> Depositar([FromBody] DepositarDto dto)
+    public async Task<IActionResult> Depositar([FromBody] DepositarDto dto, CancellationToken cancellationToken)
     {
-        await _depositarHandler.Handle(new DepositarCommand(dto.UsuarioId, dto.Monto));
+        await _depositarHandler.Handle(new DepositarCommand(dto.UsuarioId, dto.Monto), cancellationToken);
         return Ok();
     }
 }

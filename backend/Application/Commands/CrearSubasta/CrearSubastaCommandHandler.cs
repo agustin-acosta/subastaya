@@ -23,14 +23,14 @@ public class CrearSubastaCommandHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<int> Handle(CrearSubastaCommand command)
+    public async Task<int> Handle(CrearSubastaCommand command, CancellationToken cancellationToken)
     {
-        if (!await _usuarioRepository.ExisteAsync(command.VendedorId))
+        if (!await _usuarioRepository.ExisteAsync(command.VendedorId, cancellationToken))
         {
             throw new KeyNotFoundException("El vendedor no existe.");
         }
 
-        if (!await _categoriaRepository.ExisteAsync(command.CategoriaId))
+        if (!await _categoriaRepository.ExisteAsync(command.CategoriaId, cancellationToken))
         {
             throw new KeyNotFoundException("La categoría no existe.");
         }
@@ -64,7 +64,7 @@ public class CrearSubastaCommandHandler
         };
 
         _subastaRepository.Agregar(subasta);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return subasta.Id;
     }

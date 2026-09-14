@@ -12,9 +12,9 @@ public class ObtenerBalanceQueryHandler
         _billeteraRepository = billeteraRepository;
     }
 
-    public async Task<BalanceDto?> Handle(ObtenerBalanceQuery query)
+    public async Task<BalanceDto?> Handle(ObtenerBalanceQuery query, CancellationToken cancellationToken)
     {
-        var billetera = await _billeteraRepository.ObtenerPorUsuarioIdAsync(query.UsuarioId);
+        var billetera = await _billeteraRepository.ObtenerPorUsuarioIdAsync(query.UsuarioId, cancellationToken);
 
         if (billetera is null)
         {

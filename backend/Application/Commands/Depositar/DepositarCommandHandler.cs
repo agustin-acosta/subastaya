@@ -15,14 +15,14 @@ public class DepositarCommandHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task Handle(DepositarCommand command)
+    public async Task Handle(DepositarCommand command, CancellationToken cancellationToken)
     {
         if (command.Monto <= 0)
         {
             throw new OperacionInvalidaException("El monto a depositar debe ser mayor a cero.");
         }
 
-        var billetera = await _billeteraRepository.ObtenerPorUsuarioIdAsync(command.UsuarioId);
+        var billetera = await _billeteraRepository.ObtenerPorUsuarioIdAsync(command.UsuarioId, cancellationToken);
         if (billetera is null)
         {
             throw new KeyNotFoundException("El usuario no existe.");
@@ -39,6 +39,6 @@ public class DepositarCommandHandler
             SubastaId = null
         });
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }
