@@ -19,7 +19,7 @@ public class EliminarSubastaCommandHandler
         var subasta = await _subastaRepository.ObtenerPorIdAsync(command.SubastaId, cancellationToken);
         if (subasta is null)
         {
-            throw new KeyNotFoundException("La subasta no existe.");
+            throw new EntidadNoEncontradaException("La subasta no existe.");
         }
 
         if (subasta.Pujas.Count > 0)

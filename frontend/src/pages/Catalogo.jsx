@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { obtenerSubastas } from "../api/subastasApi";
 
-function Catalogo() {
+function Catalogo({ onSeleccionar }) {
     const [subastas, setSubastas] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState(null);
@@ -18,13 +18,8 @@ function Catalogo() {
             });
     }, []);
 
-    if (cargando) {
-        return <p>Cargando subastas...</p>;
-    }
-
-    if (error) {
-        return <p>Error: {error}</p>;
-    }
+    if (cargando) return <p>Cargando subastas...</p>;
+    if (error) return <p>Error: {error}</p>;
 
     return (
         <div>
@@ -32,8 +27,11 @@ function Catalogo() {
             <ul>
                 {subastas.map((subasta) => (
                     <li key={subasta.id}>
-                        {subasta.titulo} — {subasta.categoriaNombre} — $
-                        {subasta.pujaActualMonto ?? subasta.precioBase} — {subasta.estado}
+                        <button onClick={() => onSeleccionar(subasta.id)}>
+                            {subasta.titulo} — {subasta.categoriaNombre} — $
+                            {subasta.pujaActualMonto ?? subasta.precioBase} —{" "}
+                            {subasta.estado}
+                        </button>
                     </li>
                 ))}
             </ul>

@@ -28,7 +28,7 @@ public class OfertarCommandHandler
         var subasta = await _subastaRepository.ObtenerPorIdAsync(command.SubastaId, cancellationToken);
         if (subasta is null)
         {
-            throw new KeyNotFoundException("La subasta no existe.");
+            throw new EntidadNoEncontradaException("La subasta no existe.");
         }
 
         if (subasta.VendedorId == command.CompradorId)
@@ -53,7 +53,7 @@ public class OfertarCommandHandler
         var billeteraComprador = await _billeteraRepository.ObtenerPorUsuarioIdAsync(command.CompradorId, cancellationToken);
         if (billeteraComprador is null)
         {
-            throw new KeyNotFoundException("El usuario comprador no existe.");
+            throw new EntidadNoEncontradaException("El usuario comprador no existe.");
         }
 
         if (billeteraComprador.SaldoDisponible < command.Monto)
@@ -61,7 +61,7 @@ public class OfertarCommandHandler
             throw new SaldoInsuficienteException("Saldo disponible insuficiente para esta oferta.");
         }
 
-        var pujaAnterior = await _subastaRepository.ObtenerUltimaPujaAsync(subasta.Id, cancellationToken);
+        var pujaAnterior = await _subastaRepository.ObtenerPujaConMayorMontoAsync(subasta.Id, cancellationToken);
         if (pujaAnterior is not null)
         {
             var billeteraLiderAnterior = pujaAnterior.CompradorId == command.CompradorId
