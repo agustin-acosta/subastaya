@@ -1,4 +1,5 @@
 ﻿using Application.Interfaces;
+using Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
@@ -15,5 +16,12 @@ public class UsuarioRepository : IUsuarioRepository
     public async Task<bool> ExisteAsync(int usuarioId, CancellationToken cancellationToken)
     {
         return await _context.Usuarios.AnyAsync(u => u.Id == usuarioId, cancellationToken);
+    }
+
+    public async Task<List<Usuario>> ObtenerTodosAsync(CancellationToken cancellationToken)
+    {
+        return await _context.Usuarios
+            .OrderBy(u => u.Id)
+            .ToListAsync(cancellationToken);
     }
 }

@@ -27,12 +27,12 @@ public class CrearSubastaCommandHandler
     {
         if (!await _usuarioRepository.ExisteAsync(command.VendedorId, cancellationToken))
         {
-            throw new KeyNotFoundException("El vendedor no existe.");
+            throw new EntidadNoEncontradaException("El vendedor no existe.");
         }
 
         if (!await _categoriaRepository.ExisteAsync(command.CategoriaId, cancellationToken))
         {
-            throw new KeyNotFoundException("La categoría no existe.");
+            throw new EntidadNoEncontradaException("La categoría no existe.");
         }
 
         if (command.FechaFin <= command.FechaInicio)

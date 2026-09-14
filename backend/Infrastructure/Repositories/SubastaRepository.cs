@@ -50,7 +50,7 @@ public class SubastaRepository : ISubastaRepository
             .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
     }
 
-    public async Task<Puja?> ObtenerUltimaPujaAsync(int subastaId, CancellationToken cancellationToken)
+    public async Task<Puja?> ObtenerPujaConMayorMontoAsync(int subastaId, CancellationToken cancellationToken)
     {
         return await _context.Pujas
             .Where(p => p.SubastaId == subastaId)
@@ -64,14 +64,6 @@ public class SubastaRepository : ISubastaRepository
             .Where(s => s.FechaFin < ahora &&
                         (s.Estado == EstadoSubasta.Activa || s.Estado == EstadoSubasta.Programada))
             .ToListAsync(cancellationToken);
-    }
-
-    public async Task<Puja?> ObtenerPujaGanadoraAsync(int subastaId, CancellationToken cancellationToken)
-    {
-        return await _context.Pujas
-            .Where(p => p.SubastaId == subastaId)
-            .OrderByDescending(p => p.Monto)
-            .FirstOrDefaultAsync(cancellationToken);
     }
 
     public void Agregar(Subasta subasta) => _context.Subastas.Add(subasta);

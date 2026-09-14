@@ -25,7 +25,7 @@ public class DepositarCommandHandler
         var billetera = await _billeteraRepository.ObtenerPorUsuarioIdAsync(command.UsuarioId, cancellationToken);
         if (billetera is null)
         {
-            throw new KeyNotFoundException("El usuario no existe.");
+            throw new EntidadNoEncontradaException("El usuario no existe.");
         }
 
         billetera.SaldoTotal += command.Monto;
