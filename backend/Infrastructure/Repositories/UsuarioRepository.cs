@@ -24,4 +24,9 @@ public class UsuarioRepository : IUsuarioRepository
             .OrderBy(u => u.Id)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<Usuario?> ObtenerPorEmailAsync(string email, CancellationToken cancellationToken)
+    {
+        return await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
+    }
 }

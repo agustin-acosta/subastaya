@@ -5,11 +5,6 @@ namespace Infrastructure;
 
 public static class DbSeeder
 {
-    private static string SimularHash(string passwordPlano)
-    {
-        return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(passwordPlano));
-    }
-
     public static void Seed(SubastaYaDbContext context)
     {
         if (context.Usuarios.Any())
@@ -17,32 +12,34 @@ public static class DbSeeder
             return;
         }
 
+        var hasher = new Infrastructure.Security.PasswordHasher();
+
         var vendedor = new Usuario
         {
             Email = "vendedor@test.com",
             Nombre = "Creador de Publicaciones",
-            PasswordHash = SimularHash("password123"),
+            PasswordHash = hasher.Hashear("password123"),
             FechaRegistro = DateTime.UtcNow
         };
         var comprador1 = new Usuario
         {
             Email = "comprador1@test.com",
             Nombre = "Postor Líder",
-            PasswordHash = SimularHash("password123"),
+            PasswordHash = hasher.Hashear("password123"),
             FechaRegistro = DateTime.UtcNow
         };
         var comprador2 = new Usuario
         {
             Email = "comprador2@test.com",
             Nombre = "Postor Habilitado",
-            PasswordHash = SimularHash("password123"),
+            PasswordHash = hasher.Hashear("password123"),
             FechaRegistro = DateTime.UtcNow
         };
         var sinFondos = new Usuario
         {
             Email = "sinfondos@test.com",
             Nombre = "Usuario Sin Fondos",
-            PasswordHash = SimularHash("password123"),
+            PasswordHash = hasher.Hashear("password123"),
             FechaRegistro = DateTime.UtcNow
         };
 
