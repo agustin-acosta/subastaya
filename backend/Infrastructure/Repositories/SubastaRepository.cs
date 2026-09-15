@@ -58,6 +58,14 @@ public class SubastaRepository : ISubastaRepository
             .FirstOrDefaultAsync(cancellationToken);
     }
 
+    public async Task<List<Puja>> ObtenerPujasPorSubastaAsync(int subastaId, CancellationToken cancellationToken)
+    {
+        return await _context.Pujas
+            .Where(p => p.SubastaId == subastaId)
+            .OrderByDescending(p => p.FechaPuja)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<List<Subasta>> ObtenerVencidasSinLiquidarAsync(DateTime ahora, CancellationToken cancellationToken)
     {
         return await _context.Subastas

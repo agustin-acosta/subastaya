@@ -1,10 +1,13 @@
-﻿using Application.Commands.CrearSubasta;
+﻿using System.Security.Claims;
+using Application.Commands.CrearSubasta;
 using Application.Commands.EliminarSubasta;
 using Application.Commands.ModificarSubasta;
 using Application.Commands.Ofertar;
 using Application.Dtos;
+using Application.Queries.ListarPujas;
 using Application.Queries.ListarSubastas;
 using Application.Queries.ObtenerSubasta;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -19,6 +22,7 @@ public class SubastasController : ControllerBase
     private readonly CrearSubastaCommandHandler _crearSubastaHandler;
     private readonly ModificarSubastaCommandHandler _modificarSubastaHandler;
     private readonly EliminarSubastaCommandHandler _eliminarSubastaHandler;
+    private readonly ListarPujasQueryHandler _listarPujasHandler;
 
     public SubastasController(
         ListarSubastasQueryHandler listarSubastasHandler,
@@ -26,7 +30,8 @@ public class SubastasController : ControllerBase
         OfertarCommandHandler ofertarHandler,
         CrearSubastaCommandHandler crearSubastaHandler,
         ModificarSubastaCommandHandler modificarSubastaHandler,
-        EliminarSubastaCommandHandler eliminarSubastaHandler)
+        EliminarSubastaCommandHandler eliminarSubastaHandler,
+        ListarPujasQueryHandler listarPujasHandler)
     {
         _listarSubastasHandler = listarSubastasHandler;
         _obtenerSubastaHandler = obtenerSubastaHandler;
@@ -34,7 +39,11 @@ public class SubastasController : ControllerBase
         _crearSubastaHandler = crearSubastaHandler;
         _modificarSubastaHandler = modificarSubastaHandler;
         _eliminarSubastaHandler = eliminarSubastaHandler;
+        _listarPujasHandler = listarPujasHandler;
     }
+
+    private int UsuarioActualId =>
+        int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
     [HttpGet]
     public async Task<IActionResult> Listar([FromQuery] string? estado, [FromQuery] int pagina = 1, [FromQuery] int tamanoPagina = 10, CancellationToken cancellationToken = default)
@@ -54,11 +63,12 @@ public class SubastasController : ControllerBase
         return Ok(resultado);
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] CrearSubastaDto dto, CancellationToken cancellationToken)
     {
         var comando = new CrearSubastaCommand(
-            dto.VendedorId, dto.CategoriaId, dto.Titulo, dto.Descripcion,
+            UsuarioActualId, dto.CategoriaId, dto.Titulo, dto.Descripcion,
             dto.UrlImagen, dto.PrecioBase, dto.IncrementoMinimo,
             dto.FechaInicio, dto.FechaFin);
 
@@ -68,15 +78,22 @@ public class SubastasController : ControllerBase
 
     public class OfertarRequest
     {
-        public int CompradorId { get; set; }
         public decimal Monto { get; set; }
     }
 
+    [Authorize]
     [HttpPost("{id}/pujas")]
     public async Task<IActionResult> Ofertar(int id, [FromBody] OfertarRequest request, CancellationToken cancellationToken)
     {
-        var pujaId = await _ofertarHandler.Handle(new OfertarCommand(id, request.CompradorId, request.Monto), cancellationToken);
+        var pujaId = await _ofertarHandler.Handle(new OfertarCommand(id, UsuarioActualId, request.Monto), cancellationToken);
         return CreatedAtAction(nameof(ObtenerPorId), new { id }, new { pujaId });
+    }
+
+    [HttpGet("{id}/pujas")]
+    public async Task<IActionResult> ListarPujas(int id, CancellationToken cancellationToken)
+    {
+        var resultado = await _listarPujasHandler.Handle(new ListarPujasQuery(id), cancellationToken);
+        return Ok(resultado);
     }
 
     [HttpPut("{id}")]

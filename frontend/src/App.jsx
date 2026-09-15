@@ -4,6 +4,7 @@ import Catalogo from "./pages/Catalogo";
 import DetalleSubasta from "./pages/DetalleSubasta";
 import Wallet from "./pages/Wallet";
 import CrearSubasta from "./pages/CrearSubasta";
+import Login from "./pages/Login";
 
 function App() {
     return (
@@ -14,6 +15,7 @@ function App() {
                 <Route path="/subastas/:id" element={<DetalleSubasta />} />
                 <Route path="/wallet" element={<Wallet />} />
                 <Route path="/crear" element={<CrearSubasta />} />
+                <Route path="/login" element={<Login />} />
             </Routes>
         </>
     );
