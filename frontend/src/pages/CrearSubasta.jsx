@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { crearSubasta, obtenerCategorias } from "../api/subastasApi";
-import { useUser } from "../context/UserContext";
+import { useUser } from "../context/useUser";
 
 function CrearSubasta() {
     const { currentUserId } = useUser();

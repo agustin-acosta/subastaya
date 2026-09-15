@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { obtenerBalance, depositar } from "../api/subastasApi";
-import { useUser } from "../context/UserContext";
+import { useUser } from "../context/useUser";
 
 function Wallet() {
     const { currentUser, currentUserId } = useUser();
