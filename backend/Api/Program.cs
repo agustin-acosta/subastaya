@@ -1,3 +1,4 @@
+using System.Text;
 using Api.Middleware;
 using Application.Commands.CrearSubasta;
 using Application.Commands.Depositar;
@@ -7,6 +8,7 @@ using Application.Commands.ModificarSubasta;
 using Application.Commands.Ofertar;
 using Application.Interfaces;
 using Application.Queries.ListarCategorias;
+using Application.Queries.ListarPujas;
 using Application.Queries.ListarSubastas;
 using Application.Queries.ListarUsuarios;
 using Application.Queries.ObtenerBalance;
@@ -14,13 +16,42 @@ using Application.Queries.ObtenerSubasta;
 using Infrastructure;
 using Infrastructure.Repositories;
 using Infrastructure.Security;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Pegá acá el token, así: Bearer {tu token}"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 builder.Services.AddDbContext<SubastaYaDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -44,6 +75,7 @@ builder.Services.AddScoped<EliminarSubastaCommandHandler>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<LoginCommandHandler>();
+builder.Services.AddScoped<ListarPujasQueryHandler>();
 
 builder.Services.AddCors(options =>
 {
@@ -54,6 +86,30 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader();
     });
 });
+
+var jwtSection = builder.Configuration.GetSection("Jwt");
+var jwtKey = jwtSection["Key"] ?? throw new InvalidOperationException("Falta configurar Jwt:Key.");
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = jwtSection["Issuer"],
+        ValidateAudience = true,
+        ValidAudience = jwtSection["Audience"],
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+    };
+});
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
@@ -68,6 +124,7 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

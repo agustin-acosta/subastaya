@@ -1,12 +1,15 @@
-﻿using Application.Commands.Depositar;
+﻿using System.Security.Claims;
+using Application.Commands.Depositar;
 using Application.Dtos;
 using Application.Queries.ObtenerBalance;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
 [ApiController]
 [Route("api/wallet")]
+[Authorize]
 public class WalletController : ControllerBase
 {
     private readonly ObtenerBalanceQueryHandler _obtenerBalanceHandler;
@@ -20,10 +23,13 @@ public class WalletController : ControllerBase
         _depositarHandler = depositarHandler;
     }
 
+    private int UsuarioActualId =>
+        int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
     [HttpGet("balance")]
-    public async Task<IActionResult> ObtenerBalance([FromQuery] int usuarioId, CancellationToken cancellationToken)
+    public async Task<IActionResult> ObtenerBalance(CancellationToken cancellationToken)
     {
-        var resultado = await _obtenerBalanceHandler.Handle(new ObtenerBalanceQuery(usuarioId), cancellationToken);
+        var resultado = await _obtenerBalanceHandler.Handle(new ObtenerBalanceQuery(UsuarioActualId), cancellationToken);
         if (resultado is null)
         {
             return NotFound();
@@ -34,7 +40,7 @@ public class WalletController : ControllerBase
     [HttpPost("deposit")]
     public async Task<IActionResult> Depositar([FromBody] DepositarDto dto, CancellationToken cancellationToken)
     {
-        await _depositarHandler.Handle(new DepositarCommand(dto.UsuarioId, dto.Monto), cancellationToken);
+        await _depositarHandler.Handle(new DepositarCommand(UsuarioActualId, dto.Monto), cancellationToken);
         return Ok();
     }
 }

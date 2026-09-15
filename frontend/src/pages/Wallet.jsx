@@ -3,22 +3,22 @@ import { obtenerBalance, depositar } from "../api/subastasApi";
 import { useUser } from "../context/useUser";
 
 function Wallet() {
-    const { currentUser, currentUserId } = useUser();
+    const { sesion } = useUser();
     const [balance, setBalance] = useState(null);
     const [monto, setMonto] = useState("");
     const [mensaje, setMensaje] = useState(null);
     const [tick, setTick] = useState(0);
 
     useEffect(() => {
-        if (!currentUserId) return;
-        obtenerBalance(currentUserId).then(setBalance);
-    }, [currentUserId, tick]);
+        if (!sesion) return;
+        obtenerBalance().then(setBalance);
+    }, [sesion, tick]);
 
     async function handleDepositar(e) {
         e.preventDefault();
         setMensaje(null);
         try {
-            await depositar(currentUserId, Number(monto));
+            await depositar(Number(monto));
             setMensaje({ tipo: "exito", texto: "Depósito realizado." });
             setMonto("");
             setTick((t) => t + 1);
@@ -27,12 +27,12 @@ function Wallet() {
         }
     }
 
-    if (!currentUser) return <div className="container"><p>Cargando...</p></div>;
+    if (!sesion) return <div className="container"><p>Iniciá sesión para ver tu billetera.</p></div>;
 
     return (
         <div className="container">
             <h1>Mi Billetera</h1>
-            <p className="card-muted">{currentUser.email}</p>
+            <p className="card-muted">{sesion.email}</p>
 
             {balance && (
                 <div className="wallet-grid">

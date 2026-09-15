@@ -1,5 +1,36 @@
 const API_BASE_URL = "https://localhost:7094/api";
 
+function obtenerToken() {
+    try {
+        const sesion = JSON.parse(localStorage.getItem("sesion"));
+        return sesion?.token ?? null;
+    } catch {
+        return null;
+    }
+}
+
+function headersConToken(extra = {}) {
+    const token = obtenerToken();
+    return token ? { ...extra, Authorization: `Bearer ${token}` } : extra;
+}
+
+export async function login(email, password) {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+        const mensaje = data?.error || "No se pudo iniciar sesión";
+        throw new Error(mensaje);
+    }
+
+    return data;
+}
+
 export async function obtenerSubastas(pagina = 1, tamanoPagina = 10) {
     const response = await fetch(
         `${API_BASE_URL}/subastas?pagina=${pagina}&tamanoPagina=${tamanoPagina}`
@@ -26,11 +57,11 @@ export async function obtenerSubastaPorId(id) {
     return response.json();
 }
 
-export async function ofertar(subastaId, compradorId, monto) {
+export async function ofertar(subastaId, monto) {
     const response = await fetch(`${API_BASE_URL}/subastas/${subastaId}/pujas`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ compradorId, monto }),
+        headers: headersConToken({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ monto }),
     });
 
     const data = await response.json().catch(() => null);
@@ -41,16 +72,6 @@ export async function ofertar(subastaId, compradorId, monto) {
     }
 
     return data;
-}
-
-export async function obtenerUsuarios() {
-    const response = await fetch(`${API_BASE_URL}/usuarios`);
-
-    if (!response.ok) {
-        throw new Error("No se pudieron obtener los usuarios");
-    }
-
-    return response.json();
 }
 
 export async function obtenerCategorias() {
@@ -66,7 +87,7 @@ export async function obtenerCategorias() {
 export async function crearSubasta(dto) {
     const response = await fetch(`${API_BASE_URL}/subastas`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: headersConToken({ "Content-Type": "application/json" }),
         body: JSON.stringify(dto),
     });
 
@@ -80,8 +101,10 @@ export async function crearSubasta(dto) {
     return data;
 }
 
-export async function obtenerBalance(usuarioId) {
-    const response = await fetch(`${API_BASE_URL}/wallet/balance?usuarioId=${usuarioId}`);
+export async function obtenerBalance() {
+    const response = await fetch(`${API_BASE_URL}/wallet/balance`, {
+        headers: headersConToken(),
+    });
 
     if (!response.ok) {
         throw new Error("No se pudo obtener el balance");
@@ -90,11 +113,11 @@ export async function obtenerBalance(usuarioId) {
     return response.json();
 }
 
-export async function depositar(usuarioId, monto) {
+export async function depositar(monto) {
     const response = await fetch(`${API_BASE_URL}/wallet/deposit`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usuarioId, monto }),
+        headers: headersConToken({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ monto }),
     });
 
     const data = await response.json().catch(() => null);

@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { crearSubasta, obtenerCategorias } from "../api/subastasApi";
-import { useUser } from "../context/useUser";
 
 function CrearSubasta() {
-    const { currentUserId } = useUser();
     const navigate = useNavigate();
     const [categorias, setCategorias] = useState([]);
     const [mensaje, setMensaje] = useState(null);
@@ -38,7 +36,6 @@ function CrearSubasta() {
         setMensaje(null);
         try {
             const resultado = await crearSubasta({
-                vendedorId: Number(currentUserId),
                 categoriaId: Number(form.categoriaId),
                 titulo: form.titulo,
                 descripcion: form.descripcion,
