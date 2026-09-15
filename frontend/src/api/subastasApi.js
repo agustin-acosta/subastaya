@@ -52,3 +52,57 @@ export async function obtenerUsuarios() {
 
     return response.json();
 }
+
+export async function obtenerCategorias() {
+    const response = await fetch(`${API_BASE_URL}/categorias`);
+
+    if (!response.ok) {
+        throw new Error("No se pudieron obtener las categorías");
+    }
+
+    return response.json();
+}
+
+export async function crearSubasta(dto) {
+    const response = await fetch(`${API_BASE_URL}/subastas`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dto),
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+        const mensaje = data?.error || "No se pudo crear la subasta";
+        throw new Error(mensaje);
+    }
+
+    return data;
+}
+
+export async function obtenerBalance(usuarioId) {
+    const response = await fetch(`${API_BASE_URL}/wallet/balance?usuarioId=${usuarioId}`);
+
+    if (!response.ok) {
+        throw new Error("No se pudo obtener el balance");
+    }
+
+    return response.json();
+}
+
+export async function depositar(usuarioId, monto) {
+    const response = await fetch(`${API_BASE_URL}/wallet/deposit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usuarioId, monto }),
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+        const mensaje = data?.error || "No se pudo depositar";
+        throw new Error(mensaje);
+    }
+
+    return data;
+}
