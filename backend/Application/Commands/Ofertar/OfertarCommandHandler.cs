@@ -56,12 +56,19 @@ public class OfertarCommandHandler
             throw new EntidadNoEncontradaException("El usuario comprador no existe.");
         }
 
-        if (billeteraComprador.SaldoDisponible < command.Monto)
+        var pujaAnterior = await _subastaRepository.ObtenerPujaConMayorMontoAsync(subasta.Id, cancellationToken);
+
+        // si el propio comprador ya lideraba, su retención anterior se libera en este mismo
+        // handler antes de aplicar la nueva, así que ese monto vuelve a estar disponible.
+        var montoQueSeLiberaDelMismoComprador = pujaAnterior is not null && pujaAnterior.CompradorId == command.CompradorId
+            ? pujaAnterior.Monto
+            : 0m;
+
+        if (billeteraComprador.SaldoDisponible + montoQueSeLiberaDelMismoComprador < command.Monto)
         {
             throw new SaldoInsuficienteException("Saldo disponible insuficiente para esta oferta.");
         }
 
-        var pujaAnterior = await _subastaRepository.ObtenerPujaConMayorMontoAsync(subasta.Id, cancellationToken);
         if (pujaAnterior is not null)
         {
             var billeteraLiderAnterior = pujaAnterior.CompradorId == command.CompradorId

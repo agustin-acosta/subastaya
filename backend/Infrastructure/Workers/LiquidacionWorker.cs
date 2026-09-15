@@ -23,103 +23,117 @@ public class LiquidacionWorker : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            using (var scope = _scopeFactory.CreateScope())
+            List<int> idsVencidas;
+
+            using (var scopeConsulta = _scopeFactory.CreateScope())
             {
+                var subastaRepository = scopeConsulta.ServiceProvider.GetRequiredService<ISubastaRepository>();
+                var ahora = DateTime.UtcNow;
+
+                try
+                {
+                    var vencidas = await subastaRepository.ObtenerVencidasSinLiquidarAsync(ahora, stoppingToken);
+                    idsVencidas = vencidas.Select(s => s.Id).ToList();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error al consultar subastas vencidas");
+                    idsVencidas = new List<int>();
+                }
+            }
+
+            // cada subasta se procesa con su propio scope (su propio DbContext/ChangeTracker):
+            // un conflicto de concurrencia en una no debe arrastrar entidades "sucias" a la siguiente.
+            foreach (var subastaId in idsVencidas)
+            {
+                using var scope = _scopeFactory.CreateScope();
                 var subastaRepository = scope.ServiceProvider.GetRequiredService<ISubastaRepository>();
                 var billeteraRepository = scope.ServiceProvider.GetRequiredService<IBilleteraRepository>();
                 var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
                 var ahora = DateTime.UtcNow;
 
-                List<Subasta> vencidas;
                 try
                 {
-                    vencidas = await subastaRepository.ObtenerVencidasSinLiquidarAsync(ahora, stoppingToken);
+                    var subasta = await subastaRepository.ObtenerPorIdAsync(subastaId, stoppingToken);
+                    if (subasta is null)
+                    {
+                        continue;
+                    }
+
+                    var pujaGanadora = await subastaRepository.ObtenerPujaConMayorMontoAsync(subasta.Id, stoppingToken);
+
+                    if (pujaGanadora is null)
+                    {
+                        subasta.Estado = EstadoSubasta.Desierta;
+
+                        subastaRepository.AgregarAuditoria(new AuditoriaLog
+                        {
+                            Entidad = "Subasta",
+                            EntidadId = subasta.Id,
+                            Accion = "CIERRE_DESIERTA",
+                            UsuarioId = null,
+                            DetalleJson = "{}",
+                            Fecha = ahora
+                        });
+                    }
+                    else
+                    {
+                        subasta.Estado = EstadoSubasta.Finalizada;
+
+                        var billeteraComprador = await billeteraRepository.ObtenerPorUsuarioIdAsync(pujaGanadora.CompradorId, stoppingToken);
+                        var billeteraVendedor = await billeteraRepository.ObtenerPorUsuarioIdAsync(subasta.VendedorId, stoppingToken);
+
+                        if (billeteraComprador is not null && billeteraVendedor is not null)
+                        {
+                            billeteraComprador.SaldoTotal -= pujaGanadora.Monto;
+                            billeteraComprador.SaldoRetenido -= pujaGanadora.Monto;
+                            billeteraVendedor.SaldoTotal += pujaGanadora.Monto;
+
+                            billeteraRepository.AgregarMovimiento(new TransaccionLedger
+                            {
+                                BilleteraId = billeteraComprador.Id,
+                                Tipo = TipoMovimiento.Pago,
+                                Monto = pujaGanadora.Monto,
+                                Fecha = ahora,
+                                SubastaId = subasta.Id
+                            });
+
+                            billeteraRepository.AgregarMovimiento(new TransaccionLedger
+                            {
+                                BilleteraId = billeteraVendedor.Id,
+                                Tipo = TipoMovimiento.Cobro,
+                                Monto = pujaGanadora.Monto,
+                                Fecha = ahora,
+                                SubastaId = subasta.Id
+                            });
+                        }
+
+                        subastaRepository.AgregarAuditoria(new AuditoriaLog
+                        {
+                            Entidad = "Subasta",
+                            EntidadId = subasta.Id,
+                            Accion = "CIERRE_CON_GANADOR",
+                            UsuarioId = null,
+                            DetalleJson = System.Text.Json.JsonSerializer.Serialize(new
+                            {
+                                compradorId = pujaGanadora.CompradorId,
+                                monto = pujaGanadora.Monto
+                            }),
+                            Fecha = ahora
+                        });
+                    }
+
+                    subastaRepository.ActualizarSubasta(subasta);
+                    await unitOfWork.SaveChangesAsync(stoppingToken);
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    _logger.LogWarning(ex, "Conflicto de concurrencia al liquidar subasta {SubastaId}, se reintentará en el próximo ciclo", subastaId);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error al consultar subastas vencidas");
-                    vencidas = new List<Subasta>();
-                }
-
-                foreach (var subasta in vencidas)
-                {
-                    try
-                    {
-                        var pujaGanadora = await subastaRepository.ObtenerPujaConMayorMontoAsync(subasta.Id, stoppingToken);
-
-                        if (pujaGanadora is null)
-                        {
-                            subasta.Estado = EstadoSubasta.Desierta;
-
-                            subastaRepository.AgregarAuditoria(new AuditoriaLog
-                            {
-                                Entidad = "Subasta",
-                                EntidadId = subasta.Id,
-                                Accion = "CIERRE_DESIERTA",
-                                UsuarioId = null,
-                                DetalleJson = "{}",
-                                Fecha = ahora
-                            });
-                        }
-                        else
-                        {
-                            subasta.Estado = EstadoSubasta.Finalizada;
-
-                            var billeteraComprador = await billeteraRepository.ObtenerPorUsuarioIdAsync(pujaGanadora.CompradorId, stoppingToken);
-                            var billeteraVendedor = await billeteraRepository.ObtenerPorUsuarioIdAsync(subasta.VendedorId, stoppingToken);
-
-                            if (billeteraComprador is not null && billeteraVendedor is not null)
-                            {
-                                billeteraComprador.SaldoTotal -= pujaGanadora.Monto;
-                                billeteraComprador.SaldoRetenido -= pujaGanadora.Monto;
-                                billeteraVendedor.SaldoTotal += pujaGanadora.Monto;
-
-                                billeteraRepository.AgregarMovimiento(new TransaccionLedger
-                                {
-                                    BilleteraId = billeteraComprador.Id,
-                                    Tipo = TipoMovimiento.Pago,
-                                    Monto = pujaGanadora.Monto,
-                                    Fecha = ahora,
-                                    SubastaId = subasta.Id
-                                });
-
-                                billeteraRepository.AgregarMovimiento(new TransaccionLedger
-                                {
-                                    BilleteraId = billeteraVendedor.Id,
-                                    Tipo = TipoMovimiento.Cobro,
-                                    Monto = pujaGanadora.Monto,
-                                    Fecha = ahora,
-                                    SubastaId = subasta.Id
-                                });
-                            }
-
-                            subastaRepository.AgregarAuditoria(new AuditoriaLog
-                            {
-                                Entidad = "Subasta",
-                                EntidadId = subasta.Id,
-                                Accion = "CIERRE_CON_GANADOR",
-                                UsuarioId = null,
-                                DetalleJson = System.Text.Json.JsonSerializer.Serialize(new
-                                {
-                                    compradorId = pujaGanadora.CompradorId,
-                                    monto = pujaGanadora.Monto
-                                }),
-                                Fecha = ahora
-                            });
-                        }
-
-                        subastaRepository.ActualizarSubasta(subasta);
-                        await unitOfWork.SaveChangesAsync(stoppingToken);
-                    }
-                    catch (DbUpdateConcurrencyException ex)
-                    {
-                        _logger.LogWarning(ex, "Conflicto de concurrencia al liquidar subasta {SubastaId}, se reintentará en el próximo ciclo", subasta.Id);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error inesperado al liquidar subasta {SubastaId}", subasta.Id);
-                    }
+                    _logger.LogError(ex, "Error inesperado al liquidar subasta {SubastaId}", subastaId);
                 }
             }
 

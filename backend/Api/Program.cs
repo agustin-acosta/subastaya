@@ -2,6 +2,7 @@ using Api.Middleware;
 using Application.Commands.CrearSubasta;
 using Application.Commands.Depositar;
 using Application.Commands.EliminarSubasta;
+using Application.Commands.Login;
 using Application.Commands.ModificarSubasta;
 using Application.Commands.Ofertar;
 using Application.Interfaces;
@@ -12,6 +13,7 @@ using Application.Queries.ObtenerBalance;
 using Application.Queries.ObtenerSubasta;
 using Infrastructure;
 using Infrastructure.Repositories;
+using Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -39,6 +41,9 @@ builder.Services.AddHostedService<Infrastructure.Workers.LiquidacionWorker>();
 builder.Services.AddScoped<DepositarCommandHandler>();
 builder.Services.AddScoped<ModificarSubastaCommandHandler>();
 builder.Services.AddScoped<EliminarSubastaCommandHandler>();
+builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<LoginCommandHandler>();
 
 builder.Services.AddCors(options =>
 {
