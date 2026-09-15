@@ -6,7 +6,7 @@ import CountdownTimer from "../components/CountdownTimer";
 
 function DetalleSubasta() {
     const { id } = useParams();
-    const { usuarios, currentUserId, setCurrentUserId } = useUser();
+    const { sesion } = useUser();
 
     const [subasta, setSubasta] = useState(null);
     const [cargando, setCargando] = useState(true);
@@ -45,7 +45,7 @@ function DetalleSubasta() {
         e.preventDefault();
         setMensaje(null);
         try {
-            await ofertar(id, Number(currentUserId), Number(monto));
+            await ofertar(id, Number(monto));
             setMensaje({ tipo: "exito", texto: "¡Oferta registrada!" });
             setMonto("");
             setTick((t) => t + 1);
@@ -81,24 +81,13 @@ function DetalleSubasta() {
                     <div className="card-muted">Monto actual</div>
                     <div className="monto-actual">${montoActual.toLocaleString()}</div>
 
-                    {subasta.estado === "Activa" && (
+                    {subasta.estado === "Activa" && sesion && (
                         <>
                             <p>
                                 Cierra en: <CountdownTimer fechaFin={subasta.fechaFin} />
                             </p>
 
                             <form onSubmit={handleOfertar}>
-                                <div className="form-group">
-                                    <label>Ofertar como</label>
-                                    <select
-                                        value={currentUserId || ""}
-                                        onChange={(e) => setCurrentUserId(Number(e.target.value))}
-                                    >
-                                        {usuarios.map((u) => (
-                                            <option key={u.id} value={u.id}>{u.email}</option>
-                                        ))}
-                                    </select>
-                                </div>
                                 <div className="form-group">
                                     <label>Monto (mínimo ${minimo.toLocaleString()})</label>
                                     <input
@@ -114,6 +103,10 @@ function DetalleSubasta() {
                                 </button>
                             </form>
                         </>
+                    )}
+
+                    {subasta.estado === "Activa" && !sesion && (
+                        <p className="card-muted">Iniciá sesión para poder ofertar.</p>
                     )}
 
                     {subasta.estado !== "Activa" && (

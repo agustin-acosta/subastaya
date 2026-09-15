@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useUser } from "../context/useUser";
 
 function Navbar() {
-    const { usuarios, currentUserId, setCurrentUserId } = useUser();
+    const { sesion, logout } = useUser();
 
     return (
         <div className="navbar">
@@ -10,19 +10,16 @@ function Navbar() {
                 <Link to="/" className="brand">SubastaYa</Link>
                 <div className="nav-links">
                     <Link to="/">Catálogo</Link>
-                    <Link to="/crear">Publicar subasta</Link>
-                    <Link to="/wallet">Mi billetera</Link>
-                    <select
-                        className="user-select"
-                        value={currentUserId || ""}
-                        onChange={(e) => setCurrentUserId(Number(e.target.value))}
-                    >
-                        {usuarios.map((u) => (
-                            <option key={u.id} value={u.id}>
-                                {u.email}
-                            </option>
-                        ))}
-                    </select>
+                    {sesion && <Link to="/crear">Publicar subasta</Link>}
+                    {sesion && <Link to="/wallet">Mi billetera</Link>}
+                    {sesion ? (
+                        <>
+                            <span className="card-muted">{sesion.nombre}</span>
+                            <button className="btn btn-primary" onClick={logout}>Cerrar sesión</button>
+                        </>
+                    ) : (
+                        <Link to="/login">Iniciar sesión</Link>
+                    )}
                 </div>
             </div>
         </div>

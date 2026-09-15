@@ -8,6 +8,7 @@ public interface ISubastaRepository
     Task<int> ContarAsync(string? estado, CancellationToken cancellationToken);
     Task<Subasta?> ObtenerPorIdAsync(int id, CancellationToken cancellationToken);
     Task<Puja?> ObtenerPujaConMayorMontoAsync(int subastaId, CancellationToken cancellationToken);
+    Task<List<Puja>> ObtenerPujasPorSubastaAsync(int subastaId, CancellationToken cancellationToken);
     Task<List<Subasta>> ObtenerVencidasSinLiquidarAsync(DateTime ahora, CancellationToken cancellationToken);
     void Agregar(Subasta subasta);
     void ActualizarSubasta(Subasta subasta);

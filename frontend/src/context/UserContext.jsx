@@ -1,24 +1,38 @@
-import { useEffect, useState } from "react";
-import { obtenerUsuarios } from "../api/subastasApi";
+import { useState } from "react";
+import { login as loginRequest } from "../api/subastasApi";
 import { UserContext } from "./UserContextDefinition";
 
+function leerSesionGuardada() {
+    try {
+        const guardado = localStorage.getItem("sesion");
+        return guardado ? JSON.parse(guardado) : null;
+    } catch {
+        return null;
+    }
+}
+
 export function UserProvider({ children }) {
-    const [usuarios, setUsuarios] = useState([]);
-    const [currentUserId, setCurrentUserId] = useState(null);
+    const [sesion, setSesion] = useState(leerSesionGuardada);
 
-    useEffect(() => {
-        obtenerUsuarios().then((data) => {
-            setUsuarios(data);
-            if (data.length > 0) setCurrentUserId(data[0].id);
-        });
-    }, []);
+    async function login(email, password) {
+        const resultado = await loginRequest(email, password);
+        const nuevaSesion = {
+            token: resultado.token,
+            usuarioId: resultado.usuarioId,
+            nombre: resultado.nombre,
+            email: resultado.email,
+        };
+        localStorage.setItem("sesion", JSON.stringify(nuevaSesion));
+        setSesion(nuevaSesion);
+    }
 
-    const currentUser = usuarios.find((u) => u.id === currentUserId) || null;
+    function logout() {
+        localStorage.removeItem("sesion");
+        setSesion(null);
+    }
 
     return (
-        <UserContext.Provider
-            value={{ usuarios, currentUser, currentUserId, setCurrentUserId }}
-        >
+        <UserContext.Provider value={{ sesion, login, logout }}>
             {children}
         </UserContext.Provider>
     );
