@@ -5,6 +5,7 @@ using Application.Commands.EliminarSubasta;
 using Application.Commands.ModificarSubasta;
 using Application.Commands.Ofertar;
 using Application.Interfaces;
+using Application.Queries.ListarCategorias;
 using Application.Queries.ListarSubastas;
 using Application.Queries.ListarUsuarios;
 using Application.Queries.ObtenerBalance;
@@ -25,6 +26,7 @@ builder.Services.AddDbContext<SubastaYaDbContext>(options =>
 builder.Services.AddScoped<ISubastaRepository, SubastaRepository>();
 builder.Services.AddScoped<IBilleteraRepository, BilleteraRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<ListarCategoriasQueryHandler>();
 builder.Services.AddScoped<ListarUsuariosQueryHandler>();
 builder.Services.AddScoped<ListarSubastasQueryHandler>();
 builder.Services.AddScoped<ObtenerSubastaQueryHandler>();
