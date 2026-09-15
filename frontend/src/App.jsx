@@ -1,26 +1,21 @@
-import { useState } from "react";
+import { Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
 import Catalogo from "./pages/Catalogo";
 import DetalleSubasta from "./pages/DetalleSubasta";
+import Wallet from "./pages/Wallet";
+import CrearSubasta from "./pages/CrearSubasta";
 
 function App() {
-    const [subastaSeleccionada, setSubastaSeleccionada] = useState(null);
-
-    if (subastaSeleccionada) {
-        return (
-            <div>
-                <button onClick={() => setSubastaSeleccionada(null)}>
-                    ← Volver al catálogo
-                </button>
-                <DetalleSubasta subastaId={subastaSeleccionada} />
-            </div>
-        );
-    }
-
     return (
-        <div>
-            <h1>SubastaYa</h1>
-            <Catalogo onSeleccionar={setSubastaSeleccionada} />
-        </div>
+        <>
+            <Navbar />
+            <Routes>
+                <Route path="/" element={<Catalogo />} />
+                <Route path="/subastas/:id" element={<DetalleSubasta />} />
+                <Route path="/wallet" element={<Wallet />} />
+                <Route path="/crear" element={<CrearSubasta />} />
+            </Routes>
+        </>
     );
 }
 
