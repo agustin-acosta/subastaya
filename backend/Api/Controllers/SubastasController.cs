@@ -96,21 +96,23 @@ public class SubastasController : ControllerBase
         return Ok(resultado);
     }
 
+    [Authorize]
     [HttpPut("{id}")]
     public async Task<IActionResult> Modificar(int id, [FromBody] ModificarSubastaDto dto, CancellationToken cancellationToken)
     {
         var comando = new ModificarSubastaCommand(
-            id, dto.Titulo, dto.Descripcion, dto.UrlImagen,
+            id, UsuarioActualId, dto.Titulo, dto.Descripcion, dto.UrlImagen,
             dto.PrecioBase, dto.IncrementoMinimo, dto.FechaFin);
 
         await _modificarSubastaHandler.Handle(comando, cancellationToken);
         return NoContent();
     }
 
+    [Authorize]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Eliminar(int id, CancellationToken cancellationToken)
     {
-        await _eliminarSubastaHandler.Handle(new EliminarSubastaCommand(id), cancellationToken);
+        await _eliminarSubastaHandler.Handle(new EliminarSubastaCommand(id, UsuarioActualId), cancellationToken);
         return NoContent();
     }
 }

@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { obtenerSubastaPorId, ofertar } from "../api/subastasApi";
+import { useParams, useNavigate } from "react-router-dom";
+import { obtenerSubastaPorId, ofertar, eliminarSubasta } from "../api/subastasApi";
 import { useUser } from "../context/useUser";
 import CountdownTimer from "../components/CountdownTimer";
 
 function DetalleSubasta() {
     const { id } = useParams();
+    const navigate = useNavigate();
     const { sesion } = useUser();
 
     const [subasta, setSubasta] = useState(null);
@@ -54,6 +55,16 @@ function DetalleSubasta() {
         }
     }
 
+    async function handleEliminar() {
+        if (!window.confirm("¿Seguro que querés eliminar esta subasta?")) return;
+        try {
+            await eliminarSubasta(id);
+            navigate("/");
+        } catch (err) {
+            setMensaje({ tipo: "error", texto: err.message });
+        }
+    }
+
     if (cargando) return <div className="container"><p>Cargando...</p></div>;
     if (error) return <div className="container"><p>Error: {error}</p></div>;
     if (!subasta) return <div className="container"><p>La subasta no existe.</p></div>;
@@ -61,6 +72,9 @@ function DetalleSubasta() {
     const montoActual = subasta.pujaActualMonto ?? subasta.precioBase;
     const minimo = montoActual + subasta.incrementoMinimo;
     const badgeClass = `badge badge-${subasta.estado.toLowerCase()}`;
+
+    const esDueno = sesion && Number(sesion.usuarioId) === subasta.vendedorId;
+    const puedeEditar = esDueno && subasta.cantidadPujas === 0;
 
     return (
         <div className="container">
@@ -75,6 +89,17 @@ function DetalleSubasta() {
                     <p className="card-muted">Categoría: {subasta.categoriaNombre}</p>
                     <p className="card-muted">Vendedor: {subasta.vendedorNombre}</p>
                     <p className="card-muted">Ofertas realizadas: {subasta.cantidadPujas}</p>
+
+                    {puedeEditar && (
+                        <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
+                            <button type="button" className="btn btn-primary" onClick={() => navigate(`/subastas/${id}/editar`)}>
+                                Editar
+                            </button>
+                            <button type="button" className="btn" style={{ background: "#dc2626", borderColor: "#dc2626", color: "#fff" }} onClick={handleEliminar}>
+                                Eliminar
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 <div className="panel">

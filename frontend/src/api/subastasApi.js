@@ -101,6 +101,33 @@ export async function crearSubasta(dto) {
     return data;
 }
 
+export async function modificarSubasta(id, dto) {
+    const response = await fetch(`${API_BASE_URL}/subastas/${id}`, {
+        method: "PUT",
+        headers: headersConToken({ "Content-Type": "application/json" }),
+        body: JSON.stringify(dto),
+    });
+
+    if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        const mensaje = data?.error || "No se pudo modificar la subasta";
+        throw new Error(mensaje);
+    }
+}
+
+export async function eliminarSubasta(id) {
+    const response = await fetch(`${API_BASE_URL}/subastas/${id}`, {
+        method: "DELETE",
+        headers: headersConToken(),
+    });
+
+    if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        const mensaje = data?.error || "No se pudo eliminar la subasta";
+        throw new Error(mensaje);
+    }
+}
+
 export async function obtenerBalance() {
     const response = await fetch(`${API_BASE_URL}/wallet/balance`, {
         headers: headersConToken(),
