@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+
+const SEGUNDOS_URGENTE = 60;
 
 function formatear(ms) {
     if (ms <= 0) return "Finalizada";
@@ -7,17 +9,45 @@ function formatear(ms) {
     const horas = Math.floor((totalSeg % 86400) / 3600);
     const min = Math.floor((totalSeg % 3600) / 60);
     const seg = totalSeg % 60;
-    if (dias > 0) return `${dias}d ${horas}h`;
-    if (horas > 0) return `${horas}h ${min}m`;
-    return `${min}m ${seg}s`;
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${dias}d ${pad(horas)}h ${pad(min)}m ${pad(seg)}s`;
+}
+
+function reproducirAlerta() {
+    try {
+        const contexto = new (window.AudioContext || window.webkitAudioContext)();
+        const oscilador = contexto.createOscillator();
+        const ganancia = contexto.createGain();
+        oscilador.type = "sine";
+        oscilador.frequency.value = 880;
+        ganancia.gain.setValueAtTime(0.15, contexto.currentTime);
+        oscilador.connect(ganancia);
+        ganancia.connect(contexto.destination);
+        oscilador.start();
+        oscilador.stop(contexto.currentTime + 0.25);
+    }
+    catch {
+        //
+    }
 }
 
 function CountdownTimer({ fechaFin }) {
     const [restante, setRestante] = useState(null);
 
+    const yaAlertoRef = useRef(false);
+
     useEffect(() => {
         function calcular() {
-            setRestante(new Date(fechaFin).getTime() - Date.now());
+            const nuevoRestante = new Date(fechaFin).getTime() - Date.now();
+            setRestante(nuevoRestante);
+
+            const esUrgente = nuevoRestante > 0 && nuevoRestante <= SEGUNDOS_URGENTE * 1000;
+            if (esUrgente && !yaAlertoRef.current) {
+                yaAlertoRef.current = true;
+                reproducirAlerta();
+            } else if (!esUrgente) {
+                yaAlertoRef.current = false;
+            }
         }
 
         calcular();
@@ -29,7 +59,7 @@ function CountdownTimer({ fechaFin }) {
         return <span className="countdown">...</span>;
     }
 
-    const urgente = restante > 0 && restante <= 60000;
+    const urgente = restante > 0 && restante <= SEGUNDOS_URGENTE * 1000;
 
     return (
         <span className={`countdown ${urgente ? "urgente" : ""}`}>

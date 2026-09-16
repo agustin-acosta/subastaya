@@ -109,3 +109,22 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+.countdown {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+    .countdown.urgente {
+        color: #dc2626;
+        animation: countdown-parpadeo 1s infinite;
+    }
+
+@keyframes countdown-parpadeo {
+    0%, 100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
+    }
+}

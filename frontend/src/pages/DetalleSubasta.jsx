@@ -20,9 +20,6 @@ function DetalleSubasta() {
     const [mensaje, setMensaje] = useState(null);
     const [mostrarExitoCreacion, setMostrarExitoCreacion] = useState(Boolean(location.state?.creada));
 
-    // Se ejecuta una sola vez al montar, para consumir la bandera "creada"
-    // que llega por navigate() y limpiarla del historial. No debe repetirse
-    // en cada cambio de location, por eso el array de dependencias vacío.
     useEffect(() => {
         if (location.state?.creada) {
             window.history.replaceState({}, "");
@@ -76,7 +73,7 @@ function DetalleSubasta() {
         if (!window.confirm("¿Seguro que querés eliminar esta subasta?")) return;
         try {
             await eliminarSubasta(id);
-            navigate("/", { state: { eliminada: true } });
+            navigate("/");
         } catch (err) {
             setMensaje({ tipo: "error", texto: err.message });
         }
@@ -141,43 +138,47 @@ function DetalleSubasta() {
                     <div className="card-muted">Monto actual</div>
                     <div className="monto-actual">${montoActual.toLocaleString()}</div>
 
-                    {subasta.estado === "Activa" && sesion && (
+                    {subasta.estado === "Activa" && (
                         <>
-                            {estoyLiderando && (
-                                <div className="alert alert-exito" style={{ marginTop: 8 }}>
-                                    🏆 Estás liderando esta subasta
-                                </div>
-                            )}
-                            {fuiSuperado && (
-                                <div className="alert alert-error" style={{ marginTop: 8 }}>
-                                    ⚠️ Fuiste superado, ¡mejorá tu oferta!
-                                </div>
-                            )}
-
                             <p>
                                 Cierra en: <CountdownTimer fechaFin={subasta.fechaFin} />
                             </p>
 
-                            <form onSubmit={handleOfertar}>
-                                <div className="form-group">
-                                    <label>Monto (mínimo ${minimo.toLocaleString()})</label>
-                                    <input
-                                        type="number"
-                                        value={monto}
-                                        onChange={(e) => setMonto(e.target.value)}
-                                        min={minimo}
-                                        required
-                                    />
-                                </div>
-                                <button type="submit" className="btn btn-primary btn-block">
-                                    Ofertar
-                                </button>
-                            </form>
-                        </>
-                    )}
+                            {sesion && (
+                                <>
+                                    {estoyLiderando && (
+                                        <div className="alert alert-exito" style={{ marginTop: 8 }}>
+                                            🏆 Estás liderando esta subasta
+                                        </div>
+                                    )}
+                                    {fuiSuperado && (
+                                        <div className="alert alert-error" style={{ marginTop: 8 }}>
+                                            ⚠️ Fuiste superado, ¡mejorá tu oferta!
+                                        </div>
+                                    )}
 
-                    {subasta.estado === "Activa" && !sesion && (
-                        <p className="card-muted">Iniciá sesión para poder ofertar.</p>
+                                    <form onSubmit={handleOfertar}>
+                                        <div className="form-group">
+                                            <label>Monto (mínimo ${minimo.toLocaleString()})</label>
+                                            <input
+                                                type="number"
+                                                value={monto}
+                                                onChange={(e) => setMonto(e.target.value)}
+                                                min={minimo}
+                                                required
+                                            />
+                                        </div>
+                                        <button type="submit" className="btn btn-primary btn-block">
+                                            Ofertar
+                                        </button>
+                                    </form>
+                                </>
+                            )}
+
+                            {!sesion && (
+                                <p className="card-muted">Iniciá sesión para poder ofertar.</p>
+                            )}
+                        </>
                     )}
 
                     {subasta.estado !== "Activa" && (
@@ -188,34 +189,6 @@ function DetalleSubasta() {
                         <div className={`alert alert-${mensaje.tipo}`}>{mensaje.texto}</div>
                     )}
                 </div>
-            </div>
-
-            <div className="panel" style={{ marginTop: 24 }}>
-                <h3>Historial de ofertas</h3>
-                {pujas.length === 0 ? (
-                    <p className="card-muted">Todavía no hay ofertas para esta subasta.</p>
-                ) : (
-                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                        <thead>
-                            <tr style={{ textAlign: "left", borderBottom: "1px solid var(--border, #ccc)" }}>
-                                <th style={{ padding: "8px 4px" }}>Postor</th>
-                                <th style={{ padding: "8px 4px" }}>Monto</th>
-                                <th style={{ padding: "8px 4px" }}>Fecha y hora</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {pujas.map((p, i) => (
-                                <tr key={i} style={{ borderBottom: "1px solid var(--border, #eee)" }}>
-                                    <td style={{ padding: "8px 4px" }}>
-                                        {p.compradorId === Number(sesion?.usuarioId) ? "Vos" : p.compradorSeudonimo}
-                                    </td>
-                                    <td style={{ padding: "8px 4px" }}>${p.monto.toLocaleString()}</td>
-                                    <td style={{ padding: "8px 4px" }}>{new Date(p.fechaPuja).toLocaleString()}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
             </div>
         </div>
     );
