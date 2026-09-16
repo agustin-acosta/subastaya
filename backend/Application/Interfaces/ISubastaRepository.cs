@@ -12,6 +12,8 @@ public interface ISubastaRepository
     Task<Puja?> ObtenerPujaConMayorMontoAsync(int subastaId, CancellationToken cancellationToken);
     Task<List<Puja>> ObtenerPujasPorSubastaAsync(int subastaId, CancellationToken cancellationToken);
     Task<List<Subasta>> ObtenerVencidasSinLiquidarAsync(DateTime ahora, CancellationToken cancellationToken);
+    Task<List<Subasta>> ObtenerPorVendedorAsync(int vendedorId, CancellationToken cancellationToken);
+    Task<List<Subasta>> ObtenerConPujaDeUsuarioAsync(int usuarioId, CancellationToken cancellationToken);
     void Agregar(Subasta subasta);
     void ActualizarSubasta(Subasta subasta);
     void AgregarPuja(Puja puja);
