@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Application.Commands.Depositar;
 using Application.Dtos;
+using Application.Queries.ListarMovimientos;
 using Application.Queries.ObtenerBalance;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,13 +15,16 @@ public class WalletController : ControllerBase
 {
     private readonly ObtenerBalanceQueryHandler _obtenerBalanceHandler;
     private readonly DepositarCommandHandler _depositarHandler;
+    private readonly ListarMovimientosQueryHandler _listarMovimientosHandler;
 
     public WalletController(
         ObtenerBalanceQueryHandler obtenerBalanceHandler,
-        DepositarCommandHandler depositarHandler)
+        DepositarCommandHandler depositarHandler,
+        ListarMovimientosQueryHandler listarMovimientosHandler)
     {
         _obtenerBalanceHandler = obtenerBalanceHandler;
         _depositarHandler = depositarHandler;
+        _listarMovimientosHandler = listarMovimientosHandler;
     }
 
     private int UsuarioActualId =>
@@ -42,5 +46,12 @@ public class WalletController : ControllerBase
     {
         await _depositarHandler.Handle(new DepositarCommand(UsuarioActualId, dto.Monto), cancellationToken);
         return Ok();
+    }
+
+    [HttpGet("movimientos")]
+    public async Task<IActionResult> ListarMovimientos(CancellationToken cancellationToken)
+    {
+        var resultado = await _listarMovimientosHandler.Handle(new ListarMovimientosQuery(UsuarioActualId), cancellationToken);
+        return Ok(resultado);
     }
 }

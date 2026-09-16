@@ -19,6 +19,14 @@ public class BilleteraRepository : IBilleteraRepository
             .FirstOrDefaultAsync(b => b.UsuarioId == usuarioId, cancellationToken);
     }
 
+    public async Task<List<TransaccionLedger>> ObtenerMovimientosAsync(int billeteraId, CancellationToken cancellationToken)
+    {
+        return await _context.TransaccionesLedger
+            .Where(t => t.BilleteraId == billeteraId)
+            .OrderByDescending(t => t.Fecha)
+            .ToListAsync(cancellationToken);
+    }
+
     public void AgregarMovimiento(TransaccionLedger movimiento)
     {
         _context.TransaccionesLedger.Add(movimiento);

@@ -46,9 +46,19 @@ public class SubastasController : ControllerBase
         int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
     [HttpGet]
-    public async Task<IActionResult> Listar([FromQuery] string? estado, [FromQuery] int pagina = 1, [FromQuery] int tamanoPagina = 10, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Listar(
+        [FromQuery] string? estado,
+        [FromQuery] int? categoriaId,
+        [FromQuery] decimal? precioMin,
+        [FromQuery] decimal? precioMax,
+        [FromQuery] string? ordenarPor,
+        [FromQuery] int pagina = 1,
+        [FromQuery] int tamanoPagina = 10,
+        CancellationToken cancellationToken = default)
     {
-        var resultado = await _listarSubastasHandler.Handle(new ListarSubastasQuery(estado, pagina, tamanoPagina), cancellationToken);
+        var resultado = await _listarSubastasHandler.Handle(
+            new ListarSubastasQuery(estado, categoriaId, precioMin, precioMax, ordenarPor, pagina, tamanoPagina),
+            cancellationToken);
         return Ok(resultado);
     }
 

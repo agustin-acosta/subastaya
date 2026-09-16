@@ -1,29 +1,46 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { obtenerSubastaPorId, ofertar, eliminarSubasta } from "../api/subastasApi";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { obtenerSubastaPorId, obtenerPujas, ofertar, eliminarSubasta } from "../api/subastasApi";
 import { useUser } from "../context/useUser";
 import CountdownTimer from "../components/CountdownTimer";
 
 function DetalleSubasta() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const { sesion } = useUser();
 
     const [subasta, setSubasta] = useState(null);
+    const [pujas, setPujas] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState(null);
     const [tick, setTick] = useState(0);
 
     const [monto, setMonto] = useState("");
     const [mensaje, setMensaje] = useState(null);
+    const [mostrarExitoCreacion, setMostrarExitoCreacion] = useState(Boolean(location.state?.creada));
+
+    // Se ejecuta una sola vez al montar, para consumir la bandera "creada"
+    // que llega por navigate() y limpiarla del historial. No debe repetirse
+    // en cada cambio de location, por eso el array de dependencias vacío.
+    useEffect(() => {
+        if (location.state?.creada) {
+            window.history.replaceState({}, "");
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
         let cancelado = false;
         async function cargar() {
             try {
-                const data = await obtenerSubastaPorId(id);
+                const [datosSubasta, datosPujas] = await Promise.all([
+                    obtenerSubastaPorId(id),
+                    obtenerPujas(id),
+                ]);
                 if (!cancelado) {
-                    setSubasta(data);
+                    setSubasta(datosSubasta);
+                    setPujas(datosPujas);
                     setCargando(false);
                 }
             } catch (err) {
@@ -76,8 +93,26 @@ function DetalleSubasta() {
     const esDueno = sesion && Number(sesion.usuarioId) === subasta.vendedorId;
     const puedeEditar = esDueno && subasta.cantidadPujas === 0;
 
+    const misPujas = sesion ? pujas.filter((p) => p.compradorId === Number(sesion.usuarioId)) : [];
+    const lider = pujas.length > 0 ? pujas.reduce((max, p) => (p.monto > max.monto ? p : max), pujas[0]) : null;
+    const estoyLiderando = Boolean(sesion && lider && lider.compradorId === Number(sesion.usuarioId));
+    const fuiSuperado = Boolean(sesion && !estoyLiderando && misPujas.length > 0);
+
     return (
         <div className="container">
+            {mostrarExitoCreacion && (
+                <div className="alert alert-exito" style={{ marginBottom: 16 }}>
+                    ¡Subasta publicada con éxito!
+                    <button
+                        type="button"
+                        onClick={() => setMostrarExitoCreacion(false)}
+                        style={{ marginLeft: 12, background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}
+                    >
+                        cerrar
+                    </button>
+                </div>
+            )}
+
             <div className="detalle-grid">
                 <div>
                     <div className="hero-image">📦</div>
@@ -108,6 +143,17 @@ function DetalleSubasta() {
 
                     {subasta.estado === "Activa" && sesion && (
                         <>
+                            {estoyLiderando && (
+                                <div className="alert alert-exito" style={{ marginTop: 8 }}>
+                                    🏆 Estás liderando esta subasta
+                                </div>
+                            )}
+                            {fuiSuperado && (
+                                <div className="alert alert-error" style={{ marginTop: 8 }}>
+                                    ⚠️ Fuiste superado, ¡mejorá tu oferta!
+                                </div>
+                            )}
+
                             <p>
                                 Cierra en: <CountdownTimer fechaFin={subasta.fechaFin} />
                             </p>
