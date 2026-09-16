@@ -31,4 +31,9 @@ public class BilleteraRepository : IBilleteraRepository
     {
         _context.TransaccionesLedger.Add(movimiento);
     }
+
+    public void AgregarAuditoria(AuditoriaLog log)
+    {
+        _context.AuditoriaLogs.Add(log);
+    }
 }
