@@ -21,6 +21,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Application.Queries.ListarMovimientos;
+using Application.Queries.ListarMisPublicaciones;
+using Application.Queries.ListarMisPujas;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -78,6 +80,8 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<LoginCommandHandler>();
 builder.Services.AddScoped<ListarPujasQueryHandler>();
 builder.Services.AddScoped<ListarMovimientosQueryHandler>();
+builder.Services.AddScoped<ListarMisPublicacionesQueryHandler>();
+builder.Services.AddScoped<ListarMisPujasQueryHandler>();
 
 builder.Services.AddCors(options =>
 {

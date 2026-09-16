@@ -103,6 +103,25 @@ public class SubastaRepository : ISubastaRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<List<Subasta>> ObtenerPorVendedorAsync(int vendedorId, CancellationToken cancellationToken)
+    {
+        return await _context.Subastas
+            .Include(s => s.Categoria)
+            .Where(s => s.VendedorId == vendedorId)
+            .OrderByDescending(s => s.Id)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<List<Subasta>> ObtenerConPujaDeUsuarioAsync(int usuarioId, CancellationToken cancellationToken)
+    {
+        return await _context.Subastas
+            .Include(s => s.Categoria)
+            .Include(s => s.Pujas)
+            .Where(s => s.Pujas.Any(p => p.CompradorId == usuarioId))
+            .OrderByDescending(s => s.Id)
+            .ToListAsync(cancellationToken);
+    }
+
     public void Agregar(Subasta subasta) => _context.Subastas.Add(subasta);
     public void ActualizarSubasta(Subasta subasta) => _context.Subastas.Update(subasta);
     public void AgregarPuja(Puja puja) => _context.Pujas.Add(puja);

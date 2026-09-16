@@ -81,7 +81,29 @@ export async function obtenerMovimientos() {
 
     return response.json();
 }
+export async function obtenerMisPublicaciones() {
+    const response = await fetch(`${API_BASE_URL}/subastas/mis-publicaciones`, {
+        headers: headersConToken(),
+    });
 
+    if (!response.ok) {
+        throw new Error("No se pudieron obtener tus publicaciones");
+    }
+
+    return response.json();
+}
+
+export async function obtenerMisPujas() {
+    const response = await fetch(`${API_BASE_URL}/subastas/mis-pujas`, {
+        headers: headersConToken(),
+    });
+
+    if (!response.ok) {
+        throw new Error("No se pudieron obtener tus pujas");
+    }
+
+    return response.json();
+}
 export async function ofertar(subastaId, monto) {
     const response = await fetch(`${API_BASE_URL}/subastas/${subastaId}/pujas`, {
         method: "POST",

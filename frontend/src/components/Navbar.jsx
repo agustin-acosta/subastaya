@@ -11,6 +11,7 @@ function Navbar() {
                 <div className="nav-links">
                     <Link to="/">Catálogo</Link>
                     {sesion && <Link to="/crear">Publicar subasta</Link>}
+                    {sesion && <Link to="/mis-actividades">Mis actividades</Link>}
                     {sesion && <Link to="/wallet">Mi billetera</Link>}
                     {sesion ? (
                         <>

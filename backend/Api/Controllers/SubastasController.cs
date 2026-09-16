@@ -4,6 +4,8 @@ using Application.Commands.EliminarSubasta;
 using Application.Commands.ModificarSubasta;
 using Application.Commands.Ofertar;
 using Application.Dtos;
+using Application.Queries.ListarMisPublicaciones;
+using Application.Queries.ListarMisPujas;
 using Application.Queries.ListarPujas;
 using Application.Queries.ListarSubastas;
 using Application.Queries.ObtenerSubasta;
@@ -23,6 +25,8 @@ public class SubastasController : ControllerBase
     private readonly ModificarSubastaCommandHandler _modificarSubastaHandler;
     private readonly EliminarSubastaCommandHandler _eliminarSubastaHandler;
     private readonly ListarPujasQueryHandler _listarPujasHandler;
+    private readonly ListarMisPublicacionesQueryHandler _listarMisPublicacionesHandler;
+    private readonly ListarMisPujasQueryHandler _listarMisPujasHandler;
 
     public SubastasController(
         ListarSubastasQueryHandler listarSubastasHandler,
@@ -31,7 +35,9 @@ public class SubastasController : ControllerBase
         CrearSubastaCommandHandler crearSubastaHandler,
         ModificarSubastaCommandHandler modificarSubastaHandler,
         EliminarSubastaCommandHandler eliminarSubastaHandler,
-        ListarPujasQueryHandler listarPujasHandler)
+        ListarPujasQueryHandler listarPujasHandler,
+        ListarMisPublicacionesQueryHandler listarMisPublicacionesHandler,
+        ListarMisPujasQueryHandler listarMisPujasHandler)
     {
         _listarSubastasHandler = listarSubastasHandler;
         _obtenerSubastaHandler = obtenerSubastaHandler;
@@ -40,6 +46,8 @@ public class SubastasController : ControllerBase
         _modificarSubastaHandler = modificarSubastaHandler;
         _eliminarSubastaHandler = eliminarSubastaHandler;
         _listarPujasHandler = listarPujasHandler;
+        _listarMisPublicacionesHandler = listarMisPublicacionesHandler;
+        _listarMisPujasHandler = listarMisPujasHandler;
     }
 
     private int UsuarioActualId =>
@@ -59,6 +67,22 @@ public class SubastasController : ControllerBase
         var resultado = await _listarSubastasHandler.Handle(
             new ListarSubastasQuery(estado, categoriaId, precioMin, precioMax, ordenarPor, pagina, tamanoPagina),
             cancellationToken);
+        return Ok(resultado);
+    }
+
+    [Authorize]
+    [HttpGet("mis-publicaciones")]
+    public async Task<IActionResult> ListarMisPublicaciones(CancellationToken cancellationToken)
+    {
+        var resultado = await _listarMisPublicacionesHandler.Handle(new ListarMisPublicacionesQuery(UsuarioActualId), cancellationToken);
+        return Ok(resultado);
+    }
+
+    [Authorize]
+    [HttpGet("mis-pujas")]
+    public async Task<IActionResult> ListarMisPujas(CancellationToken cancellationToken)
+    {
+        var resultado = await _listarMisPujasHandler.Handle(new ListarMisPujasQuery(UsuarioActualId), cancellationToken);
         return Ok(resultado);
     }
 
