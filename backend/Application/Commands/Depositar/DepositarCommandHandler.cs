@@ -39,6 +39,16 @@ public class DepositarCommandHandler
             SubastaId = null
         });
 
+        _billeteraRepository.AgregarAuditoria(new AuditoriaLog
+        {
+            Entidad = "Billetera",
+            EntidadId = billetera.Id,
+            Accion = "ACREDITACION_MANUAL",
+            UsuarioId = command.UsuarioId,
+            DetalleJson = System.Text.Json.JsonSerializer.Serialize(new { monto = command.Monto }),
+            Fecha = DateTime.UtcNow
+        });
+
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }
