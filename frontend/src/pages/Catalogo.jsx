@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { obtenerSubastas, obtenerCategorias } from "../api/subastasApi";
 import SubastaCard from "../components/SubastaCard";
 
@@ -6,19 +7,28 @@ const ESTADOS = ["Programada", "Activa", "Finalizada", "Desierta"];
 const FILTROS_VACIOS = { estado: "", categoriaId: "", precioMin: "", precioMax: "", ordenarPor: "" };
 
 function Catalogo() {
+    const location = useLocation();
     const [subastas, setSubastas] = useState([]);
     const [categorias, setCategorias] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState(null);
     const [filtros, setFiltros] = useState(FILTROS_VACIOS);
+    const [mostrarExitoEliminacion, setMostrarExitoEliminacion] = useState(Boolean(location.state?.eliminada));
+
+    // Igual que en DetalleSubasta: se ejecuta una sola vez al montar, para
+    // consumir la bandera "eliminada" que llega por navigate() y limpiarla
+    // del historial. No debe repetirse en cada cambio de location.
+    useEffect(() => {
+        if (location.state?.eliminada) {
+            window.history.replaceState({}, "");
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
         obtenerCategorias().then(setCategorias).catch(() => { });
     }, []);
 
-    // Carga inicial: no llamamos setCargando(true) acá porque ya arranca en true.
-    // Los setState solo ocurren dentro de then/catch/finally, es decir, como
-    // reacción a que la promesa se resuelve, no de forma síncrona en el efecto.
     useEffect(() => {
         let cancelado = false;
         obtenerSubastas(FILTROS_VACIOS)
@@ -63,6 +73,19 @@ function Catalogo() {
 
     return (
         <div className="container">
+            {mostrarExitoEliminacion && (
+                <div className="alert alert-exito" style={{ marginBottom: 16 }}>
+                    Subasta eliminada correctamente.
+                    <button
+                        type="button"
+                        onClick={() => setMostrarExitoEliminacion(false)}
+                        style={{ marginLeft: 12, background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}
+                    >
+                        cerrar
+                    </button>
+                </div>
+            )}
+
             <h1>Catálogo de Subastas</h1>
 
             <form onSubmit={handleSubmit} className="panel" style={{ marginBottom: 24 }}>
