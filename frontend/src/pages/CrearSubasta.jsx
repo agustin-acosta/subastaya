@@ -45,7 +45,7 @@ function CrearSubasta() {
                 fechaInicio: new Date(form.fechaInicio).toISOString(),
                 fechaFin: new Date(form.fechaFin).toISOString(),
             });
-            navigate(`/subastas/${resultado.id}`);
+            navigate(`/subastas/${resultado.id}`, { state: { creada: true } });
         } catch (err) {
             setMensaje({ tipo: "error", texto: err.message });
         }

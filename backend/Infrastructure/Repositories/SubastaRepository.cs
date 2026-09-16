@@ -13,31 +13,60 @@ public class SubastaRepository : ISubastaRepository
         _context = context;
     }
 
-    private IQueryable<Subasta> AplicarFiltroEstado(IQueryable<Subasta> query, string? estado)
+    private IQueryable<Subasta> AplicarFiltros(
+        IQueryable<Subasta> query, string? estado, int? categoriaId, decimal? precioMin, decimal? precioMax)
     {
         if (!string.IsNullOrWhiteSpace(estado) && Enum.TryParse<EstadoSubasta>(estado, true, out var estadoParseado))
         {
             query = query.Where(s => s.Estado == estadoParseado);
         }
+
+        if (categoriaId.HasValue)
+        {
+            query = query.Where(s => s.CategoriaId == categoriaId.Value);
+        }
+
+        if (precioMin.HasValue)
+        {
+            query = query.Where(s => (s.PujaActualMonto ?? s.PrecioBase) >= precioMin.Value);
+        }
+
+        if (precioMax.HasValue)
+        {
+            query = query.Where(s => (s.PujaActualMonto ?? s.PrecioBase) <= precioMax.Value);
+        }
+
         return query;
     }
 
-    public async Task<List<Subasta>> ObtenerTodasAsync(string? estado, int pagina, int tamanoPagina, CancellationToken cancellationToken)
+    private IQueryable<Subasta> AplicarOrden(IQueryable<Subasta> query, string? ordenarPor)
+    {
+        return ordenarPor switch
+        {
+            "tiempoRestante" => query.OrderBy(s => s.FechaFin),
+            "mayorPuja" => query.OrderByDescending(s => s.PujaActualMonto ?? s.PrecioBase),
+            _ => query.OrderByDescending(s => s.Id)
+        };
+    }
+
+    public async Task<List<Subasta>> ObtenerTodasAsync(
+        string? estado, int? categoriaId, decimal? precioMin, decimal? precioMax, string? ordenarPor,
+        int pagina, int tamanoPagina, CancellationToken cancellationToken)
     {
         var query = _context.Subastas.Include(s => s.Categoria).AsQueryable();
-        query = AplicarFiltroEstado(query, estado);
+        query = AplicarFiltros(query, estado, categoriaId, precioMin, precioMax);
+        query = AplicarOrden(query, ordenarPor);
 
         return await query
-            .OrderByDescending(s => s.Id)
             .Skip((pagina - 1) * tamanoPagina)
             .Take(tamanoPagina)
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<int> ContarAsync(string? estado, CancellationToken cancellationToken)
+    public async Task<int> ContarAsync(string? estado, int? categoriaId, decimal? precioMin, decimal? precioMax, CancellationToken cancellationToken)
     {
         var query = _context.Subastas.AsQueryable();
-        query = AplicarFiltroEstado(query, estado);
+        query = AplicarFiltros(query, estado, categoriaId, precioMin, precioMax);
         return await query.CountAsync(cancellationToken);
     }
 

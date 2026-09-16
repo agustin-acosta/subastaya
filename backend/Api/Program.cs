@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Application.Queries.ListarMovimientos;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -76,6 +77,7 @@ builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<LoginCommandHandler>();
 builder.Services.AddScoped<ListarPujasQueryHandler>();
+builder.Services.AddScoped<ListarMovimientosQueryHandler>();
 
 builder.Services.AddCors(options =>
 {

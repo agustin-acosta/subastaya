@@ -14,8 +14,12 @@ public class ListarSubastasQueryHandler
 
     public async Task<PaginacionDto<SubastaListItemDto>> Handle(ListarSubastasQuery query, CancellationToken cancellationToken)
     {
-        var subastas = await _subastaRepository.ObtenerTodasAsync(query.Estado, query.Pagina, query.TamanoPagina, cancellationToken);
-        var total = await _subastaRepository.ContarAsync(query.Estado, cancellationToken);
+        var subastas = await _subastaRepository.ObtenerTodasAsync(
+            query.Estado, query.CategoriaId, query.PrecioMin, query.PrecioMax, query.OrdenarPor,
+            query.Pagina, query.TamanoPagina, cancellationToken);
+
+        var total = await _subastaRepository.ContarAsync(
+            query.Estado, query.CategoriaId, query.PrecioMin, query.PrecioMax, cancellationToken);
 
         var items = subastas.Select(s => new SubastaListItemDto
         {

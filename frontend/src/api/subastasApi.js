@@ -31,10 +31,15 @@ export async function login(email, password) {
     return data;
 }
 
-export async function obtenerSubastas(pagina = 1, tamanoPagina = 10) {
-    const response = await fetch(
-        `${API_BASE_URL}/subastas?pagina=${pagina}&tamanoPagina=${tamanoPagina}`
-    );
+export async function obtenerSubastas(filtros = {}, pagina = 1, tamanoPagina = 10) {
+    const params = new URLSearchParams({ pagina, tamanoPagina });
+    if (filtros.estado) params.set("estado", filtros.estado);
+    if (filtros.categoriaId) params.set("categoriaId", filtros.categoriaId);
+    if (filtros.precioMin) params.set("precioMin", filtros.precioMin);
+    if (filtros.precioMax) params.set("precioMax", filtros.precioMax);
+    if (filtros.ordenarPor) params.set("ordenarPor", filtros.ordenarPor);
+
+    const response = await fetch(`${API_BASE_URL}/subastas?${params.toString()}`);
 
     if (!response.ok) {
         throw new Error("No se pudieron obtener las subastas");
@@ -52,6 +57,26 @@ export async function obtenerSubastaPorId(id) {
 
     if (!response.ok) {
         throw new Error("No se pudo obtener la subasta");
+    }
+
+    return response.json();
+}
+export async function obtenerPujas(subastaId) {
+    const response = await fetch(`${API_BASE_URL}/subastas/${subastaId}/pujas`);
+
+    if (!response.ok) {
+        throw new Error("No se pudo obtener el historial de ofertas");
+    }
+
+    return response.json();
+}
+export async function obtenerMovimientos() {
+    const response = await fetch(`${API_BASE_URL}/wallet/movimientos`, {
+        headers: headersConToken(),
+    });
+
+    if (!response.ok) {
+        throw new Error("No se pudo obtener el historial de movimientos");
     }
 
     return response.json();
