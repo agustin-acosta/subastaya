@@ -20,6 +20,9 @@ function DetalleSubasta() {
     const [mensaje, setMensaje] = useState(null);
     const [mostrarExitoCreacion, setMostrarExitoCreacion] = useState(Boolean(location.state?.creada));
 
+    // Se ejecuta una sola vez al montar, para consumir la bandera "creada"
+    // que llega por navigate() y limpiarla del historial. No debe repetirse
+    // en cada cambio de location, por eso el array de dependencias vacío.
     useEffect(() => {
         if (location.state?.creada) {
             window.history.replaceState({}, "");
@@ -73,7 +76,7 @@ function DetalleSubasta() {
         if (!window.confirm("¿Seguro que querés eliminar esta subasta?")) return;
         try {
             await eliminarSubasta(id);
-            navigate("/");
+            navigate("/", { state: { eliminada: true } });
         } catch (err) {
             setMensaje({ tipo: "error", texto: err.message });
         }
@@ -189,6 +192,34 @@ function DetalleSubasta() {
                         <div className={`alert alert-${mensaje.tipo}`}>{mensaje.texto}</div>
                     )}
                 </div>
+            </div>
+
+            <div className="panel" style={{ marginTop: 24 }}>
+                <h3>Historial de ofertas</h3>
+                {pujas.length === 0 ? (
+                    <p className="card-muted">Todavía no hay ofertas para esta subasta.</p>
+                ) : (
+                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                        <thead>
+                            <tr style={{ textAlign: "left", borderBottom: "1px solid var(--border, #ccc)" }}>
+                                <th style={{ padding: "8px 4px" }}>Postor</th>
+                                <th style={{ padding: "8px 4px" }}>Monto</th>
+                                <th style={{ padding: "8px 4px" }}>Fecha y hora</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {pujas.map((p, i) => (
+                                <tr key={i} style={{ borderBottom: "1px solid var(--border, #eee)" }}>
+                                    <td style={{ padding: "8px 4px" }}>
+                                        {p.compradorId === Number(sesion?.usuarioId) ? "Vos" : p.compradorSeudonimo}
+                                    </td>
+                                    <td style={{ padding: "8px 4px" }}>${p.monto.toLocaleString()}</td>
+                                    <td style={{ padding: "8px 4px" }}>{new Date(p.fechaPuja).toLocaleString()}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
             </div>
         </div>
     );

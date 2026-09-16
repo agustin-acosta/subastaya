@@ -1,6 +1,7 @@
 ﻿using Application.Interfaces;
 using Domain;
 using Domain.Exceptions;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Commands.Ofertar;
 
@@ -40,12 +41,16 @@ public class OfertarCommandHandler
 
         if (subasta.Estado != EstadoSubasta.Activa || ahora < subasta.FechaInicio || ahora > subasta.FechaFin)
         {
+            await RegistrarPujaRechazadaAsync(subasta.Id, command.CompradorId, "PUJA_RECHAZADA_SUBASTA_NO_VIGENTE",
+                new { command.Monto }, cancellationToken);
             throw new SubastaNoVigenteException("La subasta no está vigente para recibir ofertas.");
         }
 
         var montoMinimoRequerido = (subasta.PujaActualMonto ?? subasta.PrecioBase) + subasta.IncrementoMinimo;
         if (command.Monto < montoMinimoRequerido)
         {
+            await RegistrarPujaRechazadaAsync(subasta.Id, command.CompradorId, "PUJA_RECHAZADA_MONTO_INSUFICIENTE",
+                new { command.Monto, montoMinimoRequerido }, cancellationToken);
             throw new MontoInsuficienteException(
                 $"El monto debe ser al menos {montoMinimoRequerido:C}.");
         }
@@ -58,14 +63,14 @@ public class OfertarCommandHandler
 
         var pujaAnterior = await _subastaRepository.ObtenerPujaConMayorMontoAsync(subasta.Id, cancellationToken);
 
-        // si el propio comprador ya lideraba, su retención anterior se libera en este mismo
-        // handler antes de aplicar la nueva, así que ese monto vuelve a estar disponible.
         var montoQueSeLiberaDelMismoComprador = pujaAnterior is not null && pujaAnterior.CompradorId == command.CompradorId
             ? pujaAnterior.Monto
             : 0m;
 
         if (billeteraComprador.SaldoDisponible + montoQueSeLiberaDelMismoComprador < command.Monto)
         {
+            await RegistrarPujaRechazadaAsync(subasta.Id, command.CompradorId, "PUJA_RECHAZADA_SALDO_INSUFICIENTE",
+                new { command.Monto }, cancellationToken);
             throw new SaldoInsuficienteException("Saldo disponible insuficiente para esta oferta.");
         }
 
@@ -128,8 +133,44 @@ public class OfertarCommandHandler
             });
         }
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            _unitOfWork.LimpiarSeguimiento();
+
+            _subastaRepository.AgregarAuditoria(new AuditoriaLog
+            {
+                Entidad = "Subasta",
+                EntidadId = subasta.Id,
+                Accion = "PUJA_RECHAZADA_CONCURRENCIA",
+                UsuarioId = command.CompradorId,
+                DetalleJson = System.Text.Json.JsonSerializer.Serialize(new { monto = command.Monto }),
+                Fecha = DateTime.UtcNow
+            });
+
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            throw;
+        }
 
         return nuevaPuja.Id;
+    }
+
+    private async Task RegistrarPujaRechazadaAsync(
+        int subastaId, int usuarioId, string accion, object detalle, CancellationToken cancellationToken)
+    {
+        _subastaRepository.AgregarAuditoria(new AuditoriaLog
+        {
+            Entidad = "Subasta",
+            EntidadId = subastaId,
+            Accion = accion,
+            UsuarioId = usuarioId,
+            DetalleJson = System.Text.Json.JsonSerializer.Serialize(detalle),
+            Fecha = DateTime.UtcNow
+        });
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }
