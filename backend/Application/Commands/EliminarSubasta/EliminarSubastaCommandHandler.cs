@@ -22,6 +22,11 @@ public class EliminarSubastaCommandHandler
             throw new EntidadNoEncontradaException("La subasta no existe.");
         }
 
+        if (subasta.VendedorId != command.UsuarioSolicitanteId)
+        {
+            throw new OperacionInvalidaException("No podés eliminar una subasta que no te pertenece.");
+        }
+
         if (subasta.Pujas.Count > 0)
         {
             throw new OperacionInvalidaException("No se puede eliminar una subasta que ya tiene ofertas.");

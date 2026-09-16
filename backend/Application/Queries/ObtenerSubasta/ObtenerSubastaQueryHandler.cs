@@ -24,6 +24,7 @@ public class ObtenerSubastaQueryHandler
         return new SubastaDetalleDto
         {
             Id = subasta.Id,
+            VendedorId = subasta.VendedorId,
             Titulo = subasta.Titulo,
             Descripcion = subasta.Descripcion,
             UrlImagen = subasta.UrlImagen,
