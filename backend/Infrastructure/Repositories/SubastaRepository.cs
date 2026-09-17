@@ -103,6 +103,13 @@ public class SubastaRepository : ISubastaRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<List<Subasta>> ObtenerProgramadasParaActivarAsync(DateTime ahora, CancellationToken cancellationToken)
+    {
+        return await _context.Subastas
+            .Where(s => s.Estado == EstadoSubasta.Programada && s.FechaInicio <= ahora)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<List<Subasta>> ObtenerPorVendedorAsync(int vendedorId, CancellationToken cancellationToken)
     {
         return await _context.Subastas
