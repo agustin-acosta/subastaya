@@ -19,6 +19,7 @@ function DetalleSubasta() {
     const [monto, setMonto] = useState("");
     const [mensaje, setMensaje] = useState(null);
     const [mostrarExitoCreacion, setMostrarExitoCreacion] = useState(Boolean(location.state?.creada));
+    const [imagenRota, setImagenRota] = useState(false);
 
     useEffect(() => {
         if (location.state?.creada) {
@@ -148,7 +149,17 @@ function DetalleSubasta() {
 
             <div className="detalle-grid">
                 <div>
-                    <div className="hero-image">📦</div>
+                    <div className="hero-image">
+                        {subasta.urlImagen && !imagenRota ? (
+                            <img
+                                src={subasta.urlImagen}
+                                alt={subasta.titulo}
+                                onError={() => setImagenRota(true)}
+                            />
+                        ) : (
+                            "📦"
+                        )}
+                    </div>
                     <h1 style={{ marginTop: 16 }}>{subasta.titulo}</h1>
                     <span className={badgeClass}>{subasta.estado}</span>
                     <p style={{ marginTop: 12, color: "var(--text-muted)" }}>

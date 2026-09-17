@@ -10,4 +10,5 @@ public class SubastaListItemDto
     public decimal PrecioBase { get; set; }
     public DateTime FechaFin { get; set; }
     public string Estado { get; set; } = string.Empty;
+    public int CantidadPujas { get; set; }
 }

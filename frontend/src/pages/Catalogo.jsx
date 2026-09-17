@@ -1,18 +1,24 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { obtenerSubastas, obtenerCategorias } from "../api/subastasApi";
 import SubastaCard from "../components/SubastaCard";
 
 const ESTADOS = ["Programada", "Activa", "Finalizada", "Desierta"];
-const FILTROS_VACIOS = { estado: "", categoriaId: "", precioMin: "", precioMax: "", ordenarPor: "" };
+const FILTROS_VACIOS = { estado: "", categoriaId: "", precioMin: "", precioMax: "", busqueda: "", ordenarPor: "" };
 
 function Catalogo() {
     const location = useLocation();
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    // "busqueda" es el texto que llega desde el buscador de la navbar,
+    // viajando como parámetro de la URL (ej: /?busqueda=lego).
+    const busquedaUrl = searchParams.get("busqueda") || "";
+
     const [subastas, setSubastas] = useState([]);
     const [categorias, setCategorias] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState(null);
-    const [filtros, setFiltros] = useState(FILTROS_VACIOS);
+    const [filtros, setFiltros] = useState({ ...FILTROS_VACIOS, busqueda: busquedaUrl });
     const [mostrarExitoEliminacion, setMostrarExitoEliminacion] = useState(Boolean(location.state?.eliminada));
 
     useEffect(() => {
@@ -26,20 +32,17 @@ function Catalogo() {
         obtenerCategorias().then(setCategorias).catch(() => { });
     }, []);
 
+    // Se ejecuta al entrar a la página Y cada vez que "busquedaUrl"
+    // cambia (o sea, cada vez que se busca algo nuevo desde la
+    // navbar sin salir del catálogo). Al buscar desde la navbar
+    // reiniciamos el resto de los filtros (estado/categoría/precio):
+    // es una búsqueda nueva, no un refinamiento de la anterior.
     useEffect(() => {
-        let cancelado = false;
-        obtenerSubastas(FILTROS_VACIOS)
-            .then((data) => {
-                if (!cancelado) setSubastas(data.items);
-            })
-            .catch((err) => {
-                if (!cancelado) setError(err.message);
-            })
-            .finally(() => {
-                if (!cancelado) setCargando(false);
-            });
-        return () => { cancelado = true; };
-    }, []);
+        const filtrosConBusqueda = { ...FILTROS_VACIOS, busqueda: busquedaUrl };
+        setFiltros(filtrosConBusqueda);
+        buscar(filtrosConBusqueda);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [busquedaUrl]);
 
     async function buscar(filtrosActuales) {
         setCargando(true);
@@ -66,10 +69,16 @@ function Catalogo() {
     function handleLimpiar() {
         setFiltros(FILTROS_VACIOS);
         buscar(FILTROS_VACIOS);
+        // Si había una búsqueda en la URL (?busqueda=...), la sacamos
+        // también, para que la URL no quede diciendo una cosa y la
+        // pantalla otra.
+        if (busquedaUrl) {
+            navigate("/", { replace: true });
+        }
     }
 
     return (
-        <div className="container">
+        <div className="container" id="catalogo">
             {mostrarExitoEliminacion && (
                 <div className="alert alert-exito" style={{ marginBottom: 16 }}>
                     Subasta eliminada correctamente.
@@ -83,7 +92,16 @@ function Catalogo() {
                 </div>
             )}
 
-            <h1>Catálogo de Subastas</h1>
+            <div className="page-header">
+                <span className="page-kicker">Explorá</span>
+                <h1>Catálogo de Subastas</h1>
+                <p className="page-subtitulo">
+                    {busquedaUrl
+                        ? <>Resultados para "<strong>{busquedaUrl}</strong>"</>
+                        : "Encontrá algo único entre las subastas activas, próximas y finalizadas."}
+                </p>
+                <div className="page-divisor"></div>
+            </div>
 
             <form onSubmit={handleSubmit} className="panel" style={{ marginBottom: 24 }}>
                 <div className="filtros-grid">

@@ -15,11 +15,11 @@ public class ListarSubastasQueryHandler
     public async Task<PaginacionDto<SubastaListItemDto>> Handle(ListarSubastasQuery query, CancellationToken cancellationToken)
     {
         var subastas = await _subastaRepository.ObtenerTodasAsync(
-            query.Estado, query.CategoriaId, query.PrecioMin, query.PrecioMax, query.OrdenarPor,
+            query.Estado, query.CategoriaId, query.PrecioMin, query.PrecioMax, query.Busqueda, query.OrdenarPor,
             query.Pagina, query.TamanoPagina, cancellationToken);
 
         var total = await _subastaRepository.ContarAsync(
-            query.Estado, query.CategoriaId, query.PrecioMin, query.PrecioMax, cancellationToken);
+            query.Estado, query.CategoriaId, query.PrecioMin, query.PrecioMax, query.Busqueda, cancellationToken);
 
         var items = subastas.Select(s => new SubastaListItemDto
         {
@@ -30,7 +30,8 @@ public class ListarSubastasQueryHandler
             PujaActualMonto = s.PujaActualMonto,
             PrecioBase = s.PrecioBase,
             FechaFin = s.FechaFin,
-            Estado = s.Estado.ToString()
+            Estado = s.Estado.ToString(),
+            CantidadPujas = s.Pujas.Count
         }).ToList();
 
         return new PaginacionDto<SubastaListItemDto>

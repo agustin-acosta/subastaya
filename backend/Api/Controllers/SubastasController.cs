@@ -59,13 +59,14 @@ public class SubastasController : ControllerBase
         [FromQuery] int? categoriaId,
         [FromQuery] decimal? precioMin,
         [FromQuery] decimal? precioMax,
+        [FromQuery] string? busqueda,
         [FromQuery] string? ordenarPor,
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanoPagina = 10,
         CancellationToken cancellationToken = default)
     {
         var resultado = await _listarSubastasHandler.Handle(
-            new ListarSubastasQuery(estado, categoriaId, precioMin, precioMax, ordenarPor, pagina, tamanoPagina),
+            new ListarSubastasQuery(estado, categoriaId, precioMin, precioMax, busqueda, ordenarPor, pagina, tamanoPagina),
             cancellationToken);
         return Ok(resultado);
     }
