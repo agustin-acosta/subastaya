@@ -27,20 +27,21 @@ public class ActivarSubastaCommandHandlerTests
         };
     }
 
-    private static (ActivarSubastaCommandHandler handler, Mock<ISubastaRepository> subastaRepo) CrearHandler()
+    private static (ActivarSubastaCommandHandler handler, Mock<ISubastaRepository> subastaRepo, Mock<INotificadorSubastas> notificadorSubastas) CrearHandler()
     {
         var subastaRepo = new Mock<ISubastaRepository>();
         var unitOfWork = new Mock<IUnitOfWork>();
         unitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        var notificadorSubastas = new Mock<INotificadorSubastas>();
 
-        var handler = new ActivarSubastaCommandHandler(subastaRepo.Object, unitOfWork.Object);
-        return (handler, subastaRepo);
+        var handler = new ActivarSubastaCommandHandler(subastaRepo.Object, unitOfWork.Object, notificadorSubastas.Object);
+        return (handler, subastaRepo, notificadorSubastas);
     }
 
     [Fact]
-    public async Task Activar_UnaSubastaProgramada_LaPasaAActivaYRegistraAuditoria()
+    public async Task Activar_UnaSubastaProgramada_LaPasaAActivaYRegistraAuditoriaYNotificaElCambio()
     {
-        var (handler, subastaRepo) = CrearHandler();
+        var (handler, subastaRepo, notificadorSubastas) = CrearHandler();
         var subasta = CrearSubastaProgramada();
 
         subastaRepo.Setup(r => r.ObtenerPorIdAsync(subasta.Id, It.IsAny<CancellationToken>()))
@@ -51,12 +52,14 @@ public class ActivarSubastaCommandHandlerTests
         Assert.Equal(EstadoSubasta.Activa, subasta.Estado);
         subastaRepo.Verify(r => r.AgregarAuditoria(It.Is<AuditoriaLog>(a => a.Accion == "ACTIVACION")), Times.Once);
         subastaRepo.Verify(r => r.ActualizarSubasta(subasta), Times.Once);
+
+        notificadorSubastas.Verify(n => n.NotificarCambioEstadoAsync(subasta.Id, "Activa", It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task Activar_UnaSubastaQueYaNoEstaProgramada_NoHaceNada()
+    public async Task Activar_UnaSubastaQueYaNoEstaProgramada_NoHaceNadaYNoNotificaNada()
     {
-        var (handler, subastaRepo) = CrearHandler();
+        var (handler, subastaRepo, notificadorSubastas) = CrearHandler();
         var subasta = CrearSubastaProgramada();
         subasta.Estado = EstadoSubasta.Activa;
 
@@ -67,5 +70,6 @@ public class ActivarSubastaCommandHandlerTests
 
         subastaRepo.Verify(r => r.AgregarAuditoria(It.IsAny<AuditoriaLog>()), Times.Never);
         subastaRepo.Verify(r => r.ActualizarSubasta(It.IsAny<Subasta>()), Times.Never);
+        notificadorSubastas.Verify(n => n.NotificarCambioEstadoAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 }

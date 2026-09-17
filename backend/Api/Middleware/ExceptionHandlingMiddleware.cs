@@ -20,46 +20,44 @@ public class ExceptionHandlingMiddleware
         {
             await _next(context);
         }
-        catch (DbUpdateConcurrencyException)
+        catch (Exception ex) when (!context.Response.HasStarted)
         {
-            context.Response.StatusCode = StatusCodes.Status409Conflict;
-            await context.Response.WriteAsJsonAsync(new { error = "La subasta fue modificada por otra oferta. Intentá de nuevo." });
-        }
-        catch (EntidadNoEncontradaException ex)
-        {
-            context.Response.StatusCode = StatusCodes.Status404NotFound;
-            await context.Response.WriteAsJsonAsync(new { error = ex.Message });
-        }
-        catch (SubastaNoVigenteException ex)
-        {
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            await context.Response.WriteAsJsonAsync(new { error = ex.Message });
-        }
-        catch (MontoInsuficienteException ex)
-        {
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            await context.Response.WriteAsJsonAsync(new { error = ex.Message });
-        }
-        catch (SaldoInsuficienteException ex)
-        {
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            await context.Response.WriteAsJsonAsync(new { error = ex.Message });
-        }
-        catch (OperacionInvalidaException ex)
-        {
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            await context.Response.WriteAsJsonAsync(new { error = ex.Message });
-        }
-        catch (CredencialesInvalidasException ex)
-        {
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            await context.Response.WriteAsJsonAsync(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error no controlado procesando {Method} {Path}", context.Request.Method, context.Request.Path);
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-            await context.Response.WriteAsJsonAsync(new { error = "Ocurrió un error inesperado en el servidor." });
+            switch (ex)
+            {
+                case DbUpdateConcurrencyException:
+                    context.Response.StatusCode = StatusCodes.Status409Conflict;
+                    await context.Response.WriteAsJsonAsync(new { error = "La subasta fue modificada por otra oferta. Intentá de nuevo." });
+                    break;
+                case EntidadNoEncontradaException entidadNoEncontrada:
+                    context.Response.StatusCode = StatusCodes.Status404NotFound;
+                    await context.Response.WriteAsJsonAsync(new { error = entidadNoEncontrada.Message });
+                    break;
+                case SubastaNoVigenteException subastaNoVigente:
+                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    await context.Response.WriteAsJsonAsync(new { error = subastaNoVigente.Message });
+                    break;
+                case MontoInsuficienteException montoInsuficiente:
+                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    await context.Response.WriteAsJsonAsync(new { error = montoInsuficiente.Message });
+                    break;
+                case SaldoInsuficienteException saldoInsuficiente:
+                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    await context.Response.WriteAsJsonAsync(new { error = saldoInsuficiente.Message });
+                    break;
+                case OperacionInvalidaException operacionInvalida:
+                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    await context.Response.WriteAsJsonAsync(new { error = operacionInvalida.Message });
+                    break;
+                case CredencialesInvalidasException credencialesInvalidas:
+                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    await context.Response.WriteAsJsonAsync(new { error = credencialesInvalidas.Message });
+                    break;
+                default:
+                    _logger.LogError(ex, "Error no controlado procesando {Method} {Path}", context.Request.Method, context.Request.Path);
+                    context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                    await context.Response.WriteAsJsonAsync(new { error = "Ocurrió un error inesperado en el servidor." });
+                    break;
+            }
         }
     }
 }

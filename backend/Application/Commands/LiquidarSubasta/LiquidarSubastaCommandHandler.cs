@@ -8,15 +8,18 @@ public class LiquidarSubastaCommandHandler
     private readonly ISubastaRepository _subastaRepository;
     private readonly IBilleteraRepository _billeteraRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly INotificadorSubastas _notificadorSubastas;
 
     public LiquidarSubastaCommandHandler(
         ISubastaRepository subastaRepository,
         IBilleteraRepository billeteraRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        INotificadorSubastas notificadorSubastas)
     {
         _subastaRepository = subastaRepository;
         _billeteraRepository = billeteraRepository;
         _unitOfWork = unitOfWork;
+        _notificadorSubastas = notificadorSubastas;
     }
 
     public async Task Handle(LiquidarSubastaCommand command, CancellationToken cancellationToken)
@@ -93,5 +96,7 @@ public class LiquidarSubastaCommandHandler
 
         _subastaRepository.ActualizarSubasta(subasta);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _notificadorSubastas.NotificarCambioEstadoAsync(subasta.Id, subasta.Estado.ToString(), cancellationToken);
     }
 }

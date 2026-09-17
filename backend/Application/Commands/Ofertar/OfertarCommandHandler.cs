@@ -10,6 +10,7 @@ public class OfertarCommandHandler
     private readonly ISubastaRepository _subastaRepository;
     private readonly IBilleteraRepository _billeteraRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly INotificadorSubastas _notificadorSubastas;
 
     private const int SegundosVentanaAntiSniping = 60;
     private static readonly TimeSpan ExtensionAntiSniping = TimeSpan.FromMinutes(2);
@@ -17,11 +18,13 @@ public class OfertarCommandHandler
     public OfertarCommandHandler(
         ISubastaRepository subastaRepository,
         IBilleteraRepository billeteraRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        INotificadorSubastas notificadorSubastas)
     {
         _subastaRepository = subastaRepository;
         _billeteraRepository = billeteraRepository;
         _unitOfWork = unitOfWork;
+        _notificadorSubastas = notificadorSubastas;
     }
 
     public async Task<int> Handle(OfertarCommand command, CancellationToken cancellationToken)
@@ -118,7 +121,9 @@ public class OfertarCommandHandler
         subasta.PujaActualMonto = command.Monto;
 
         var tiempoRestante = subasta.FechaFin - ahora;
-        if (tiempoRestante.TotalSeconds <= SegundosVentanaAntiSniping)
+        var huboExtension = tiempoRestante.TotalSeconds <= SegundosVentanaAntiSniping;
+
+        if (huboExtension)
         {
             subasta.FechaFin += ExtensionAntiSniping;
 
@@ -153,6 +158,13 @@ public class OfertarCommandHandler
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             throw;
+        }
+        var notificacionPuja = new NuevaPujaNotificacion(command.CompradorId, $"Postor #{command.CompradorId}", command.Monto, ahora);
+        await _notificadorSubastas.NotificarNuevaPujaAsync(subasta.Id, notificacionPuja, cancellationToken);
+
+        if (huboExtension)
+        {
+            await _notificadorSubastas.NotificarExtensionAsync(subasta.Id, subasta.FechaFin, cancellationToken);
         }
 
         return nuevaPuja.Id;
