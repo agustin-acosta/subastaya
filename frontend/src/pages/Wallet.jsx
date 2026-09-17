@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { obtenerBalance, depositar, obtenerMovimientos } from "../api/subastasApi";
 import { useUser } from "../context/useUser";
 
@@ -88,24 +89,24 @@ function Wallet() {
                 {movimientos.length === 0 ? (
                     <p className="card-muted">Todavía no tenés movimientos.</p>
                 ) : (
-                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <table className="tabla">
                         <thead>
-                            <tr style={{ textAlign: "left", borderBottom: "1px solid var(--border, #ccc)" }}>
-                                <th style={{ padding: "8px 4px" }}>Fecha</th>
-                                <th style={{ padding: "8px 4px" }}>Tipo</th>
-                                <th style={{ padding: "8px 4px" }}>Monto</th>
-                                <th style={{ padding: "8px 4px" }}>Subasta</th>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Tipo</th>
+                                <th>Monto</th>
+                                <th>Subasta</th>
                             </tr>
                         </thead>
                         <tbody>
                             {movimientos.map((m, i) => (
-                                <tr key={i} style={{ borderBottom: "1px solid var(--border, #eee)" }}>
-                                    <td style={{ padding: "8px 4px" }}>{new Date(m.fecha).toLocaleString()}</td>
-                                    <td style={{ padding: "8px 4px" }}>{ETIQUETAS_TIPO[m.tipo] ?? m.tipo}</td>
-                                    <td style={{ padding: "8px 4px" }}>${m.monto.toLocaleString()}</td>
-                                    <td style={{ padding: "8px 4px" }}>
+                                <tr key={i}>
+                                    <td>{new Date(m.fecha).toLocaleString()}</td>
+                                    <td>{ETIQUETAS_TIPO[m.tipo] ?? m.tipo}</td>
+                                    <td>${m.monto.toLocaleString()}</td>
+                                    <td>
                                         {m.subastaId ? (
-                                            <a href={`/subastas/${m.subastaId}`}>#{m.subastaId}</a>
+                                            <Link to={`/subastas/${m.subastaId}`}>#{m.subastaId}</Link>
                                         ) : (
                                             "-"
                                         )}

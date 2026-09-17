@@ -17,7 +17,7 @@
 
   font: 18px/145% var(--sans);
   letter-spacing: 0.18px;
-  color-scheme: light dark;
+  color-scheme: light;
   color: var(--text);
   background: var(--bg);
   font-synthesis: none;
@@ -27,26 +27,6 @@
 
   @media (max-width: 1024px) {
     font-size: 16px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
   }
 }
 
@@ -74,13 +54,14 @@ h2 {
 }
 
 h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
+    font-size: 34px;
+    letter-spacing: -0.4px;
+    margin: 24px 0;
+
+    @media (max-width: 1024px) {
+        font-size: 26px;
+        margin: 16px 0;
+    }
 }
 h2 {
   font-size: 24px;
@@ -127,4 +108,495 @@ code {
     50% {
         opacity: 0.4;
     }
+}
+/* ============================================================
+   COMPONENTES BASE — botones, paneles, tarjetas, badges, alertas, formularios
+   ============================================================ */
+
+.container {
+    text-align: left;
+    padding: 32px;
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+@media (max-width: 1024px) {
+    .container {
+        padding: 20px 16px;
+    }
+}
+
+/* Botones */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text-h);
+    font: inherit;
+    font-weight: 500;
+    font-size: 15px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+    .btn:hover {
+        border-color: var(--accent-border);
+        box-shadow: var(--shadow);
+        transform: translateY(-1px);
+    }
+
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+.btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+}
+
+    .btn-primary:hover {
+        box-shadow: 0 8px 20px -6px var(--accent-border);
+    }
+
+.btn-block {
+    display: flex;
+    width: 100%;
+    margin-top: 8px;
+}
+
+/* Paneles: cajas de contenido con "cuerpo" (sombra + borde) */
+.panel {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+    text-align: left;
+}
+
+/* Tarjetas clickeables (subastas) */
+.card {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    text-align: left;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: var(--shadow);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+    .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 25px -8px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    }
+
+.card-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+    font-size: 48px;
+    background: var(--accent-bg);
+}
+
+.card-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.card-title {
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--text-h);
+}
+
+.card-muted {
+    color: var(--text);
+    font-size: 14px;
+}
+
+.card-price {
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--text-h);
+    margin-top: 2px;
+}
+
+/* Badges de estado */
+.badge {
+    display: inline-block;
+    align-self: flex-start;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.badge-activa {
+    background: rgba(22, 163, 74, 0.12);
+    color: #16a34a;
+}
+
+.badge-programada {
+    background: rgba(107, 114, 128, 0.12);
+    color: #6b7280;
+}
+
+.badge-finalizada {
+    background: rgba(37, 99, 235, 0.12);
+    color: #2563eb;
+}
+
+.badge-desierta {
+    background: rgba(220, 38, 38, 0.12);
+    color: #dc2626;
+}
+
+/* Alertas */
+.alert {
+    padding: 12px 16px;
+    border-radius: 10px;
+    border-left: 4px solid transparent;
+    font-size: 15px;
+    text-align: left;
+}
+
+.alert-exito {
+    background: rgba(22, 163, 74, 0.08);
+    border-left-color: #16a34a;
+    color: #15803d;
+}
+
+.alert-error {
+    background: rgba(220, 38, 38, 0.08);
+    border-left-color: #dc2626;
+    color: #b91c1c;
+}
+
+/* Formularios */
+.form-group {
+    margin-bottom: 16px;
+    text-align: left;
+}
+
+    .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-h);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--bg);
+        color: var(--text-h);
+        font: inherit;
+        font-size: 15px;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-bg);
+        }
+
+    .form-group textarea {
+        resize: vertical;
+    }
+/* Barra de navegación */
+.navbar {
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+}
+
+.navbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px 32px;
+}
+
+.brand {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-h);
+    text-decoration: none;
+    letter-spacing: -0.4px;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+    .nav-links a {
+        color: var(--text);
+        text-decoration: none;
+        font-size: 15px;
+        font-weight: 500;
+        transition: color 0.15s ease;
+    }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+@media (max-width: 1024px) {
+    .navbar-inner {
+        padding: 12px 16px;
+    }
+
+    .nav-links {
+        gap: 14px;
+    }
+}
+/* Grillas de tarjetas (catálogo y "mis actividades") */
+.catalogo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+/* Detalle de una subasta: info a la izquierda, panel de oferta a la derecha */
+.detalle-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .detalle-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hero-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 260px;
+  font-size: 96px;
+  background: var(--accent-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.monto-actual {
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--text-h);
+  margin: 8px 0 16px;
+}
+
+/* Billetera: tarjetas de resumen de saldo */
+.wallet-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 700px) {
+    .wallet-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.wallet-stat {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+    text-align: left;
+}
+
+    .wallet-stat .valor {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-h);
+    }
+
+    .wallet-stat .label {
+        font-size: 14px;
+        color: var(--text);
+        margin-top: 4px;
+    }
+
+/* Botón de acción destructiva (eliminar) */
+.btn-danger {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #fff;
+}
+
+.btn-danger:hover {
+  box-shadow: 0 8px 20px -6px rgba(220, 38, 38, 0.5);
+}
+
+/* Botón "cerrar" dentro de una alerta de éxito/error */
+.alert-cerrar {
+  margin-left: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+}
+
+/* Fila de botones de acción en línea */
+.acciones-fila {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* Grilla de filtros (catálogo) */
+.filtros-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+/* Tablas de datos (historial de ofertas, movimientos) */
+.tabla {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .tabla th {
+        text-align: left;
+        padding: 10px 8px;
+        border-bottom: 2px solid var(--border);
+        font-size: 13px;
+        color: var(--text);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .tabla td {
+        padding: 10px 8px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .tabla tbody tr:hover {
+        background: var(--code-bg);
+    }
+/* Marca / logo con gradiente y un ícono */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  text-decoration: none;
+  color: var(--text-h);
+}
+
+.brand-icon {
+  font-size: 22px;
+}
+
+.brand-accent {
+  background: linear-gradient(135deg, var(--accent), #7c3aed);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Barra de navegación fija arriba, con efecto de vidrio esmerilado */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Subrayado animado en el link de la página activa */
+.nav-links a.nav-link-activo {
+  color: var(--accent);
+  position: relative;
+}
+
+.nav-links a.nav-link-activo::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+/* Feedback táctil al hacer click en un botón */
+.btn:active {
+  transform: scale(0.97);
+}
+
+/* Un poco de profundidad extra en las imágenes de las tarjetas */
+.card-image {
+  background: linear-gradient(160deg, var(--accent-bg), #ffffff);
+}
+
+.hero-image {
+  background: linear-gradient(160deg, var(--accent-bg), #ffffff);
+}
+
+/* Aparición suave del contenido al cargar la página */
+@keyframes fade-in-up {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.panel,
+.card {
+    animation: fade-in-up 0.35s ease both;
 }

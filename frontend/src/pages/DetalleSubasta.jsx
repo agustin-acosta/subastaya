@@ -75,11 +75,6 @@ function DetalleSubasta() {
             setSubasta((prev) => prev ? { ...prev, estado: nuevoEstado } : prev);
         });
 
-        // Si la conexión se corta un instante y SignalR la reconecta sola
-        // (gracias a withAutomaticReconnect), la reconexión usa un ID de
-        // conexión nuevo y NO nos vuelve a meter en el grupo de esta subasta
-        // automáticamente. onreconnected() es el gancho que SignalR nos da
-        // para enterarnos de que eso pasó, y ahí repetimos el "unirse".
         connection.onreconnected(() => {
             connection.invoke("UnirseASubasta", subastaId).catch((err) =>
                 console.error("No se pudo volver a unirse al grupo tras reconectar:", err)
@@ -144,7 +139,7 @@ function DetalleSubasta() {
                     <button
                         type="button"
                         onClick={() => setMostrarExitoCreacion(false)}
-                        style={{ marginLeft: 12, background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}
+                        className="alert-cerrar"
                     >
                         cerrar
                     </button>
@@ -164,11 +159,11 @@ function DetalleSubasta() {
                     <p className="card-muted">Ofertas realizadas: {subasta.cantidadPujas}</p>
 
                     {puedeEditar && (
-                        <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
+                        <div className="acciones-fila">
                             <button type="button" className="btn btn-primary" onClick={() => navigate(`/subastas/${id}/editar`)}>
                                 Editar
                             </button>
-                            <button type="button" className="btn" style={{ background: "#dc2626", borderColor: "#dc2626", color: "#fff" }} onClick={handleEliminar}>
+                            <button type="button" className="btn btn-danger" onClick={handleEliminar}>
                                 Eliminar
                             </button>
                         </div>
@@ -255,22 +250,22 @@ function DetalleSubasta() {
                 {pujas.length === 0 ? (
                     <p className="card-muted">Todavía no hay ofertas para esta subasta.</p>
                 ) : (
-                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <table className="tabla">
                         <thead>
-                            <tr style={{ textAlign: "left", borderBottom: "1px solid var(--border, #ccc)" }}>
-                                <th style={{ padding: "8px 4px" }}>Postor</th>
-                                <th style={{ padding: "8px 4px" }}>Monto</th>
-                                <th style={{ padding: "8px 4px" }}>Fecha y hora</th>
+                            <tr>
+                                <th>Postor</th>
+                                <th>Monto</th>
+                                <th>Fecha y hora</th>
                             </tr>
                         </thead>
                         <tbody>
                             {pujas.map((p, i) => (
-                                <tr key={i} style={{ borderBottom: "1px solid var(--border, #eee)" }}>
-                                    <td style={{ padding: "8px 4px" }}>
+                                <tr key={i}>
+                                    <td>
                                         {p.compradorId === Number(sesion?.usuarioId) ? "Vos" : p.compradorSeudonimo}
                                     </td>
-                                    <td style={{ padding: "8px 4px" }}>${p.monto.toLocaleString()}</td>
-                                    <td style={{ padding: "8px 4px" }}>{new Date(p.fechaPuja).toLocaleString()}</td>
+                                    <td>${p.monto.toLocaleString()}</td>
+                                    <td>{new Date(p.fechaPuja).toLocaleString()}</td>
                                 </tr>
                             ))}
                         </tbody>

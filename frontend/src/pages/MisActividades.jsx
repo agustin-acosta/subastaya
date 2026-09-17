@@ -42,10 +42,7 @@ function MisActividades() {
             {publicaciones.length === 0 ? (
                 <p className="card-muted">Todavía no publicaste ninguna subasta.</p>
             ) : (
-                <div
-                    className="catalogo-grid"
-                    style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16 }}
-                >
+                    <div className="catalogo-grid">
                     {publicaciones.map((subasta) => (
                         <SubastaCard key={subasta.id} subasta={subasta} />
                     ))}
@@ -56,10 +53,7 @@ function MisActividades() {
             {pujas.length === 0 ? (
                 <p className="card-muted">Todavía no ofertaste en ninguna subasta.</p>
             ) : (
-                <div
-                    className="catalogo-grid"
-                    style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16 }}
-                >
+                    <div className="catalogo-grid">
                     {pujas.map((p) => (
                         <Link key={p.subastaId} to={`/subastas/${p.subastaId}`} className="card">
                             <div className="card-body">
