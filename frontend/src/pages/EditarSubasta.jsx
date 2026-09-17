@@ -2,6 +2,12 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { obtenerSubastaPorId, modificarSubasta } from "../api/subastasApi";
 
+function aInputDatetimeLocal(fechaIso) {
+    const fecha = new Date(fechaIso);
+    const offsetMs = fecha.getTimezoneOffset() * 60000;
+    return new Date(fecha.getTime() - offsetMs).toISOString().slice(0, 16);
+}
+
 function EditarSubasta() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -26,7 +32,7 @@ function EditarSubasta() {
                 urlImagen: subasta.urlImagen ?? "",
                 precioBase: subasta.precioBase,
                 incrementoMinimo: subasta.incrementoMinimo,
-                fechaFin: subasta.fechaFin.slice(0, 16),
+                fechaFin: aInputDatetimeLocal(subasta.fechaFin),
             });
             setCargando(false);
         });

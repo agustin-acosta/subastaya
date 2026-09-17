@@ -15,9 +15,6 @@ function Catalogo() {
     const [filtros, setFiltros] = useState(FILTROS_VACIOS);
     const [mostrarExitoEliminacion, setMostrarExitoEliminacion] = useState(Boolean(location.state?.eliminada));
 
-    // Igual que en DetalleSubasta: se ejecuta una sola vez al montar, para
-    // consumir la bandera "eliminada" que llega por navigate() y limpiarla
-    // del historial. No debe repetirse en cada cambio de location.
     useEffect(() => {
         if (location.state?.eliminada) {
             window.history.replaceState({}, "");
@@ -79,7 +76,7 @@ function Catalogo() {
                     <button
                         type="button"
                         onClick={() => setMostrarExitoEliminacion(false)}
-                        style={{ marginLeft: 12, background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}
+                        className="alert-cerrar"
                     >
                         cerrar
                     </button>
@@ -89,7 +86,7 @@ function Catalogo() {
             <h1>Catálogo de Subastas</h1>
 
             <form onSubmit={handleSubmit} className="panel" style={{ marginBottom: 24 }}>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12 }}>
+                <div className="filtros-grid">
                     <div className="form-group">
                         <label>Estado</label>
                         <select value={filtros.estado} onChange={(e) => handleFiltroChange("estado", e.target.value)}>
@@ -121,7 +118,7 @@ function Catalogo() {
                         </select>
                     </div>
                 </div>
-                <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                <div className="acciones-fila">
                     <button type="submit" className="btn btn-primary">Aplicar filtros</button>
                     <button type="button" className="btn" onClick={handleLimpiar}>Limpiar</button>
                 </div>
@@ -134,10 +131,7 @@ function Catalogo() {
             ) : subastas.length === 0 ? (
                 <p className="card-muted">No hay subastas para mostrar.</p>
             ) : (
-                <div
-                    className="catalogo-grid"
-                    style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16 }}
-                >
+                <div className="catalogo-grid">
                     {subastas.map((subasta) => (
                         <SubastaCard key={subasta.id} subasta={subasta} />
                     ))}
