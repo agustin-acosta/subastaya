@@ -5,9 +5,9 @@ namespace Application.Interfaces;
 public interface ISubastaRepository
 {
     Task<List<Subasta>> ObtenerTodasAsync(
-        string? estado, int? categoriaId, decimal? precioMin, decimal? precioMax, string? ordenarPor,
+        string? estado, int? categoriaId, decimal? precioMin, decimal? precioMax, string? busqueda, string? ordenarPor,
         int pagina, int tamanoPagina, CancellationToken cancellationToken);
-    Task<int> ContarAsync(string? estado, int? categoriaId, decimal? precioMin, decimal? precioMax, CancellationToken cancellationToken);
+    Task<int> ContarAsync(string? estado, int? categoriaId, decimal? precioMin, decimal? precioMax, string? busqueda, CancellationToken cancellationToken);
     Task<Subasta?> ObtenerPorIdAsync(int id, CancellationToken cancellationToken);
     Task<Puja?> ObtenerPujaConMayorMontoAsync(int subastaId, CancellationToken cancellationToken);
     Task<List<Puja>> ObtenerPujasPorSubastaAsync(int subastaId, CancellationToken cancellationToken);

@@ -38,6 +38,7 @@ export async function obtenerSubastas(filtros = {}, pagina = 1, tamanoPagina = 1
     if (filtros.categoriaId) params.set("categoriaId", filtros.categoriaId);
     if (filtros.precioMin) params.set("precioMin", filtros.precioMin);
     if (filtros.precioMax) params.set("precioMax", filtros.precioMax);
+    if (filtros.busqueda) params.set("busqueda", filtros.busqueda);
     if (filtros.ordenarPor) params.set("ordenarPor", filtros.ordenarPor);
 
     const response = await fetch(`${API_BASE_URL}/subastas?${params.toString()}`);

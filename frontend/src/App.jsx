@@ -1,5 +1,6 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
+import Hero from "./components/Hero";
 import Catalogo from "./pages/Catalogo";
 import DetalleSubasta from "./pages/DetalleSubasta";
 import Wallet from "./pages/Wallet";
@@ -9,18 +10,28 @@ import MisActividades from "./pages/MisActividades";
 import Login from "./pages/Login";
 
 function App() {
+    const location = useLocation();
+    const esInicio = location.pathname === "/";
+
     return (
         <>
+            <div className="fondo-decorativo" aria-hidden="true">
+                <span className="blob blob-1"></span>
+                <span className="blob blob-2"></span>
+            </div>
             <Navbar />
-            <Routes>
-                <Route path="/" element={<Catalogo />} />
-                <Route path="/subastas/:id" element={<DetalleSubasta />} />
-                <Route path="/subastas/:id/editar" element={<EditarSubasta />} />
-                <Route path="/wallet" element={<Wallet />} />
-                <Route path="/crear" element={<CrearSubasta />} />
-                <Route path="/mis-actividades" element={<MisActividades />} />
-                <Route path="/login" element={<Login />} />
-            </Routes>
+            {esInicio && <Hero />}
+            <div className="contenido">
+                <Routes>
+                    <Route path="/" element={<Catalogo />} />
+                    <Route path="/subastas/:id" element={<DetalleSubasta />} />
+                    <Route path="/subastas/:id/editar" element={<EditarSubasta />} />
+                    <Route path="/wallet" element={<Wallet />} />
+                    <Route path="/crear" element={<CrearSubasta />} />
+                    <Route path="/mis-actividades" element={<MisActividades />} />
+                    <Route path="/login" element={<Login />} />
+                </Routes>
+            </div>
         </>
     );
 }
