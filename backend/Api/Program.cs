@@ -1,15 +1,19 @@
-using System.Text;
+using Api.Hubs;
 using Api.Middleware;
+using Api.RealTime;
+using Application.Commands.ActivarSubasta;
 using Application.Commands.CrearSubasta;
 using Application.Commands.Depositar;
 using Application.Commands.EliminarSubasta;
+using Application.Commands.LiquidarSubasta;
 using Application.Commands.Login;
 using Application.Commands.ModificarSubasta;
 using Application.Commands.Ofertar;
 using Application.Interfaces;
-using Application.Commands.LiquidarSubasta;
-using Application.Commands.ActivarSubasta;
 using Application.Queries.ListarCategorias;
+using Application.Queries.ListarMisPublicaciones;
+using Application.Queries.ListarMisPujas;
+using Application.Queries.ListarMovimientos;
 using Application.Queries.ListarPujas;
 using Application.Queries.ListarSubastas;
 using Application.Queries.ListarUsuarios;
@@ -22,14 +26,17 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Application.Queries.ListarMovimientos;
-using Application.Queries.ListarMisPublicaciones;
-using Application.Queries.ListarMisPujas;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSignalR()
+    .AddJsonProtocol(options =>
+    {
+        options.PayloadSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -64,6 +71,7 @@ builder.Services.AddDbContext<SubastaYaDbContext>(options =>
 builder.Services.AddScoped<ISubastaRepository, SubastaRepository>();
 builder.Services.AddScoped<IBilleteraRepository, BilleteraRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddSingleton<INotificadorSubastas, NotificadorSubastasSignalR>();
 builder.Services.AddScoped<ListarCategoriasQueryHandler>();
 builder.Services.AddScoped<ListarUsuariosQueryHandler>();
 builder.Services.AddScoped<ActivarSubastaCommandHandler>();
@@ -93,7 +101,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .AllowCredentials();
     });
 });
 
@@ -137,6 +146,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<SubastasHub>("/hubs/subastas");
 
 using (var scope = app.Services.CreateScope())
 {

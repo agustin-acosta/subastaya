@@ -1,4 +1,5 @@
-const API_BASE_URL = "https://localhost:7094/api";
+export const API_BASE_URL = "https://localhost:7094/api";
+export const HUB_URL = API_BASE_URL.replace(/\/api$/, "") + "/hubs/subastas";
 
 function obtenerToken() {
     try {

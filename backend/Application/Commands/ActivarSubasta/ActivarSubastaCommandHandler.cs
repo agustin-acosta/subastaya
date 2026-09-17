@@ -7,11 +7,16 @@ public class ActivarSubastaCommandHandler
 {
     private readonly ISubastaRepository _subastaRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly INotificadorSubastas _notificadorSubastas;
 
-    public ActivarSubastaCommandHandler(ISubastaRepository subastaRepository, IUnitOfWork unitOfWork)
+    public ActivarSubastaCommandHandler(
+        ISubastaRepository subastaRepository,
+        IUnitOfWork unitOfWork,
+        INotificadorSubastas notificadorSubastas)
     {
         _subastaRepository = subastaRepository;
         _unitOfWork = unitOfWork;
+        _notificadorSubastas = notificadorSubastas;
     }
 
     public async Task Handle(ActivarSubastaCommand command, CancellationToken cancellationToken)
@@ -37,5 +42,7 @@ public class ActivarSubastaCommandHandler
 
         _subastaRepository.ActualizarSubasta(subasta);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _notificadorSubastas.NotificarCambioEstadoAsync(subasta.Id, subasta.Estado.ToString(), cancellationToken);
     }
 }

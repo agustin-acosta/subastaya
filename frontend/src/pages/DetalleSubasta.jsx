@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { obtenerSubastaPorId, obtenerPujas, ofertar, eliminarSubasta } from "../api/subastasApi";
+import { HubConnectionBuilder } from "@microsoft/signalr";
+import { obtenerSubastaPorId, obtenerPujas, ofertar, eliminarSubasta, HUB_URL } from "../api/subastasApi";
 import { useUser } from "../context/useUser";
 import CountdownTimer from "../components/CountdownTimer";
 
@@ -14,15 +15,11 @@ function DetalleSubasta() {
     const [pujas, setPujas] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState(null);
-    const [tick, setTick] = useState(0);
 
     const [monto, setMonto] = useState("");
     const [mensaje, setMensaje] = useState(null);
     const [mostrarExitoCreacion, setMostrarExitoCreacion] = useState(Boolean(location.state?.creada));
 
-    // Se ejecuta una sola vez al montar, para consumir la bandera "creada"
-    // que llega por navigate() y limpiarla del historial. No debe repetirse
-    // en cada cambio de location, por eso el array de dependencias vacío.
     useEffect(() => {
         if (location.state?.creada) {
             window.history.replaceState({}, "");
@@ -52,12 +49,54 @@ function DetalleSubasta() {
         }
         cargar();
         return () => { cancelado = true; };
-    }, [id, tick]);
+    }, [id]);
 
     useEffect(() => {
-        const intervalo = setInterval(() => setTick((t) => t + 1), 2500);
-        return () => clearInterval(intervalo);
-    }, []);
+        const subastaId = Number(id);
+        const connection = new HubConnectionBuilder()
+            .withUrl(HUB_URL)
+            .withAutomaticReconnect()
+            .build();
+
+        connection.on("NuevaPuja", (notificacion) => {
+            setPujas((prev) => [notificacion, ...prev]);
+            setSubasta((prev) => prev ? {
+                ...prev,
+                pujaActualMonto: notificacion.monto,
+                cantidadPujas: prev.cantidadPujas + 1,
+            } : prev);
+        });
+
+        connection.on("ExtensionTiempo", ({ nuevaFechaFin }) => {
+            setSubasta((prev) => prev ? { ...prev, fechaFin: nuevaFechaFin } : prev);
+        });
+
+        connection.on("CambioEstado", ({ nuevoEstado }) => {
+            setSubasta((prev) => prev ? { ...prev, estado: nuevoEstado } : prev);
+        });
+
+        // Si la conexión se corta un instante y SignalR la reconecta sola
+        // (gracias a withAutomaticReconnect), la reconexión usa un ID de
+        // conexión nuevo y NO nos vuelve a meter en el grupo de esta subasta
+        // automáticamente. onreconnected() es el gancho que SignalR nos da
+        // para enterarnos de que eso pasó, y ahí repetimos el "unirse".
+        connection.onreconnected(() => {
+            connection.invoke("UnirseASubasta", subastaId).catch((err) =>
+                console.error("No se pudo volver a unirse al grupo tras reconectar:", err)
+            );
+        });
+
+        connection.start()
+            .then(() => connection.invoke("UnirseASubasta", subastaId))
+            .catch((err) => console.error("No se pudo conectar al Hub de subastas:", err));
+
+        return () => {
+            if (connection.state === "Connected") {
+                connection.invoke("SalirDeSubasta", subastaId).catch(() => { });
+            }
+            connection.stop();
+        };
+    }, [id]);
 
     async function handleOfertar(e) {
         e.preventDefault();
@@ -66,7 +105,6 @@ function DetalleSubasta() {
             await ofertar(id, Number(monto));
             setMensaje({ tipo: "exito", texto: "¡Oferta registrada!" });
             setMonto("");
-            setTick((t) => t + 1);
         } catch (err) {
             setMensaje({ tipo: "error", texto: err.message });
         }
@@ -182,6 +220,24 @@ function DetalleSubasta() {
                                 <p className="card-muted">Iniciá sesión para poder ofertar.</p>
                             )}
                         </>
+                    )}
+
+                    {subasta.estado === "Finalizada" && estoyLiderando && (
+                        <div className="alert alert-exito" style={{ marginTop: 8 }}>
+                            🎉 ¡Felicitaciones! Ganaste esta subasta por ${montoActual.toLocaleString()}.
+                        </div>
+                    )}
+
+                    {subasta.estado === "Finalizada" && esDueno && (
+                        <div className="alert alert-exito" style={{ marginTop: 8 }}>
+                            ✅ Tu subasta se vendió por ${montoActual.toLocaleString()}.
+                        </div>
+                    )}
+
+                    {subasta.estado === "Desierta" && (
+                        <div className="alert alert-error" style={{ marginTop: 8 }}>
+                            Esta subasta finalizó sin ofertas.
+                        </div>
                     )}
 
                     {subasta.estado !== "Activa" && (
