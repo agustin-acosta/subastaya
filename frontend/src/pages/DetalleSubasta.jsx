@@ -126,10 +126,11 @@ function DetalleSubasta() {
 
     const esDueno = sesion && Number(sesion.usuarioId) === subasta.vendedorId;
     const puedeEditar = esDueno && subasta.cantidadPujas === 0;
+    const esMia = (p) => p.esMia ?? (Boolean(sesion) && p.compradorId === Number(sesion?.usuarioId));
 
-    const misPujas = sesion ? pujas.filter((p) => p.compradorId === Number(sesion.usuarioId)) : [];
+    const misPujas = pujas.filter(esMia);
     const lider = pujas.length > 0 ? pujas.reduce((max, p) => (p.monto > max.monto ? p : max), pujas[0]) : null;
-    const estoyLiderando = Boolean(sesion && lider && lider.compradorId === Number(sesion.usuarioId));
+    const estoyLiderando = Boolean(sesion && lider && esMia(lider));
     const fuiSuperado = Boolean(sesion && !estoyLiderando && misPujas.length > 0);
 
     return (
@@ -273,7 +274,7 @@ function DetalleSubasta() {
                             {pujas.map((p, i) => (
                                 <tr key={i}>
                                     <td>
-                                        {p.compradorId === Number(sesion?.usuarioId) ? "Vos" : p.compradorSeudonimo}
+                                        {esMia(p) ? "Vos" : p.compradorSeudonimo}
                                     </td>
                                     <td>${p.monto.toLocaleString()}</td>
                                     <td>{new Date(p.fechaPuja).toLocaleString()}</td>

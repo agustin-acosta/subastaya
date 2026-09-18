@@ -64,7 +64,9 @@ export async function obtenerSubastaPorId(id) {
     return response.json();
 }
 export async function obtenerPujas(subastaId) {
-    const response = await fetch(`${API_BASE_URL}/subastas/${subastaId}/pujas`);
+    const response = await fetch(`${API_BASE_URL}/subastas/${subastaId}/pujas`, {
+        headers: headersConToken(),
+    });
 
     if (!response.ok) {
         throw new Error("No se pudo obtener el historial de ofertas");

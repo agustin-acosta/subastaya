@@ -53,6 +53,15 @@ public class SubastasController : ControllerBase
     private int UsuarioActualId =>
         int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
+    private int? UsuarioActualIdONull
+    {
+        get
+        {
+            var valor = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return valor is null ? null : int.Parse(valor);
+        }
+    }
+
     [HttpGet]
     public async Task<IActionResult> Listar(
         [FromQuery] string? estado,
@@ -127,7 +136,7 @@ public class SubastasController : ControllerBase
     [HttpGet("{id}/pujas")]
     public async Task<IActionResult> ListarPujas(int id, CancellationToken cancellationToken)
     {
-        var resultado = await _listarPujasHandler.Handle(new ListarPujasQuery(id), cancellationToken);
+        var resultado = await _listarPujasHandler.Handle(new ListarPujasQuery(id, UsuarioActualIdONull), cancellationToken);
         return Ok(resultado);
     }
 

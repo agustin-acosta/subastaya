@@ -18,7 +18,7 @@ public class ListarPujasQueryHandler
 
         return pujas.Select(p => new PujaListItemDto
         {
-            CompradorId = p.CompradorId,
+            EsMia = query.UsuarioActualId.HasValue && p.CompradorId == query.UsuarioActualId.Value,
             Monto = p.Monto,
             CompradorSeudonimo = $"Postor #{p.CompradorId}",
             FechaPuja = p.FechaPuja
