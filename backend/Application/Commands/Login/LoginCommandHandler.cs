@@ -24,8 +24,6 @@ public class LoginCommandHandler
     {
         var usuario = await _usuarioRepository.ObtenerPorEmailAsync(command.Email, cancellationToken);
 
-        // mismo mensaje de error tanto si el email no existe como si la contraseña está mal:
-        // así nadie puede usar el error para adivinar qué emails están registrados.
         if (usuario is null || !_passwordHasher.Verificar(usuario.PasswordHash, command.Password))
         {
             throw new CredencialesInvalidasException("Email o contraseña incorrectos.");

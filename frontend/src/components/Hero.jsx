@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 
-// Cuántos píxeles de scroll hacen falta para que el hero termine de
-// desvanecerse por completo (a partir de ahí queda invisible).
 const DISTANCIA_DESVANECIDO = 220;
 
 function Hero() {

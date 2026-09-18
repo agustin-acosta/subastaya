@@ -8,7 +8,6 @@ public class TransaccionLedger
     public decimal Monto { get; set; }
     public DateTime Fecha { get; set; }
 
-    // opcional: no todo movimiento viene de una subasta (ej. un depósito manual), por eso es nullable.
     public int? SubastaId { get; set; }
 
     public Billetera Billetera { get; set; } = null!;

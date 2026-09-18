@@ -9,6 +9,5 @@ public class Usuario
     public string PasswordHash { get; set; } = string.Empty;
     public DateTime FechaRegistro { get; set; }
 
-    // relacion de navegacion 1:1 con billetera.
     public Billetera? Billetera { get; set; }
 }

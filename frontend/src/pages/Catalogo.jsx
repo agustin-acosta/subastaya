@@ -10,16 +10,23 @@ function Catalogo() {
     const location = useLocation();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    // "busqueda" es el texto que llega desde el buscador de la navbar,
-    // viajando como parámetro de la URL (ej: /?busqueda=lego).
+    
     const busquedaUrl = searchParams.get("busqueda") || "";
+
+    const filtrosDeBusquedaUrl = { ...FILTROS_VACIOS, busqueda: busquedaUrl };
 
     const [subastas, setSubastas] = useState([]);
     const [categorias, setCategorias] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState(null);
-    const [filtros, setFiltros] = useState({ ...FILTROS_VACIOS, busqueda: busquedaUrl });
+    const [filtros, setFiltros] = useState(filtrosDeBusquedaUrl);
     const [mostrarExitoEliminacion, setMostrarExitoEliminacion] = useState(Boolean(location.state?.eliminada));
+
+    const [busquedaYaAplicada, setBusquedaYaAplicada] = useState(busquedaUrl);
+    if (busquedaUrl !== busquedaYaAplicada) {
+        setBusquedaYaAplicada(busquedaUrl);
+        setFiltros(filtrosDeBusquedaUrl);
+    }
 
     useEffect(() => {
         if (location.state?.eliminada) {
@@ -32,15 +39,8 @@ function Catalogo() {
         obtenerCategorias().then(setCategorias).catch(() => { });
     }, []);
 
-    // Se ejecuta al entrar a la página Y cada vez que "busquedaUrl"
-    // cambia (o sea, cada vez que se busca algo nuevo desde la
-    // navbar sin salir del catálogo). Al buscar desde la navbar
-    // reiniciamos el resto de los filtros (estado/categoría/precio):
-    // es una búsqueda nueva, no un refinamiento de la anterior.
     useEffect(() => {
-        const filtrosConBusqueda = { ...FILTROS_VACIOS, busqueda: busquedaUrl };
-        setFiltros(filtrosConBusqueda);
-        buscar(filtrosConBusqueda);
+        buscar(filtrosDeBusquedaUrl);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [busquedaUrl]);
 
@@ -69,9 +69,7 @@ function Catalogo() {
     function handleLimpiar() {
         setFiltros(FILTROS_VACIOS);
         buscar(FILTROS_VACIOS);
-        // Si había una búsqueda en la URL (?busqueda=...), la sacamos
-        // también, para que la URL no quede diciendo una cosa y la
-        // pantalla otra.
+        
         if (busquedaUrl) {
             navigate("/", { replace: true });
         }

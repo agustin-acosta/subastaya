@@ -9,8 +9,6 @@ public class Puja
     public decimal Monto { get; set; }
     public DateTime FechaPuja { get; set; }
 
-    // sin version: una puja es un hecho histórico inmutable, nunca se actualiza
-
     public Subasta Subasta { get; set; } = null!;
     public Usuario Comprador { get; set; } = null!;
 }
