@@ -35,6 +35,16 @@ public class CrearSubastaCommandHandler
             throw new EntidadNoEncontradaException("La categoría no existe.");
         }
 
+        if (string.IsNullOrWhiteSpace(command.Titulo))
+        {
+            throw new OperacionInvalidaException("El título es obligatorio.");
+        }
+
+        if (string.IsNullOrWhiteSpace(command.Descripcion))
+        {
+            throw new OperacionInvalidaException("La descripción es obligatoria.");
+        }
+
         if (command.FechaFin <= command.FechaInicio)
         {
             throw new OperacionInvalidaException("La fecha de fin debe ser posterior a la fecha de inicio.");

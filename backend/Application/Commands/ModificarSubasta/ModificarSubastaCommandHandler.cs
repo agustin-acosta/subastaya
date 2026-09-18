@@ -32,6 +32,16 @@ public class ModificarSubastaCommandHandler
             throw new OperacionInvalidaException("No se puede modificar una subasta que ya tiene ofertas.");
         }
 
+        if (string.IsNullOrWhiteSpace(command.Titulo))
+        {
+            throw new OperacionInvalidaException("El título es obligatorio.");
+        }
+
+        if (string.IsNullOrWhiteSpace(command.Descripcion))
+        {
+            throw new OperacionInvalidaException("La descripción es obligatoria.");
+        }
+
         if (command.FechaFin <= subasta.FechaInicio)
         {
             throw new OperacionInvalidaException("La fecha de fin debe ser posterior a la fecha de inicio.");

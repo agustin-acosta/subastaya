@@ -31,6 +31,17 @@ public class LiquidarSubastaCommandHandler
         }
 
         var ahora = DateTime.UtcNow;
+
+        if (subasta.Estado != EstadoSubasta.Activa && subasta.Estado != EstadoSubasta.Programada)
+        {
+            return;
+        }
+
+        if (subasta.FechaFin > ahora)
+        {
+            return;
+        }
+
         var pujaGanadora = await _subastaRepository.ObtenerPujaConMayorMontoAsync(subasta.Id, cancellationToken);
 
         if (pujaGanadora is null)
