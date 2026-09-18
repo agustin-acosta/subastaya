@@ -10,18 +10,14 @@ function Catalogo() {
     const location = useLocation();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    
     const busquedaUrl = searchParams.get("busqueda") || "";
-
     const filtrosDeBusquedaUrl = { ...FILTROS_VACIOS, busqueda: busquedaUrl };
-
     const [subastas, setSubastas] = useState([]);
     const [categorias, setCategorias] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState(null);
     const [filtros, setFiltros] = useState(filtrosDeBusquedaUrl);
     const [mostrarExitoEliminacion, setMostrarExitoEliminacion] = useState(Boolean(location.state?.eliminada));
-
     const [busquedaYaAplicada, setBusquedaYaAplicada] = useState(busquedaUrl);
     if (busquedaUrl !== busquedaYaAplicada) {
         setBusquedaYaAplicada(busquedaUrl);
@@ -56,25 +52,20 @@ function Catalogo() {
             setCargando(false);
         }
     }
-
     function handleFiltroChange(campo, valor) {
         setFiltros((f) => ({ ...f, [campo]: valor }));
     }
-
     function handleSubmit(e) {
         e.preventDefault();
         buscar(filtros);
     }
-
     function handleLimpiar() {
         setFiltros(FILTROS_VACIOS);
-        buscar(FILTROS_VACIOS);
-        
+        buscar(FILTROS_VACIOS);   
         if (busquedaUrl) {
             navigate("/", { replace: true });
         }
     }
-
     return (
         <div className="container" id="catalogo">
             {mostrarExitoEliminacion && (

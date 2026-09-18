@@ -66,7 +66,8 @@ La clave con la que se firman los tokens JWT **no** está en `appsettings.json` 
 
 Parado en `backend/Api`, ejecutar una sola vez:
 
-dotnet user-secrets set "Jwt:Key" "cualquier-texto-largo-y-aleatorio-que-elijas"
+```dotnet user-secrets set "Jwt:Key" "cualquier-texto-largo-y-aleatorio-que-elijas"```
+
 
 Después de esto, se debe hacer un clean + rebuild para que quede embebido en el ejecutable.
 
