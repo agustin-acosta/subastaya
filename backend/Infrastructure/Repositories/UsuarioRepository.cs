@@ -18,13 +18,6 @@ public class UsuarioRepository : IUsuarioRepository
         return await _context.Usuarios.AnyAsync(u => u.Id == usuarioId, cancellationToken);
     }
 
-    public async Task<List<Usuario>> ObtenerTodosAsync(CancellationToken cancellationToken)
-    {
-        return await _context.Usuarios
-            .OrderBy(u => u.Id)
-            .ToListAsync(cancellationToken);
-    }
-
     public async Task<Usuario?> ObtenerPorEmailAsync(string email, CancellationToken cancellationToken)
     {
         return await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
