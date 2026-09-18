@@ -52,13 +52,16 @@ function Catalogo() {
             setCargando(false);
         }
     }
+
     function handleFiltroChange(campo, valor) {
         setFiltros((f) => ({ ...f, [campo]: valor }));
     }
+
     function handleSubmit(e) {
         e.preventDefault();
         buscar(filtros);
     }
+
     function handleLimpiar() {
         setFiltros(FILTROS_VACIOS);
         buscar(FILTROS_VACIOS);   
@@ -66,6 +69,7 @@ function Catalogo() {
             navigate("/", { replace: true });
         }
     }
+
     return (
         <div className="container" id="catalogo">
             {mostrarExitoEliminacion && (
