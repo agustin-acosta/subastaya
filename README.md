@@ -58,7 +58,19 @@ El archivo `backend/Api/appsettings.json` ya trae una configuración lista para 
 }
 ```
 
-Esto le indica al proyecto que use la instancia de SQL Server LocalDB local, con una base llamada `SubastaYaDb`. La configuración de JWT (clave, emisor, audiencia) también viene con valores de desarrollo ya cargados en ese mismo archivo — son solo para uso local, no para producción.
+Esto le indica al proyecto que use la instancia de SQL Server LocalDB local, con una base llamada `SubastaYaDb`. El emisor y la audiencia del JWT también vienen cargados en ese mismo archivo.
+
+### Clave de firma del JWT (una sola vez por máquina)
+
+La clave con la que se firman los tokens JWT **no** está en `appsettings.json` a propósito: es un secreto, y ese archivo se sube al repositorio. En su lugar, cada persona que clone el proyecto tiene que configurarla una sola vez en su propia máquina usando [User Secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets) de .NET, que guarda el valor en una carpeta fuera del proyecto (así nunca termina en Git).
+
+Parado en `backend/Api`, ejecutar una sola vez:
+
+dotnet user-secrets set "Jwt:Key" "cualquier-texto-largo-y-aleatorio-que-elijas"
+
+Después de esto, se debe hacer un clean + rebuild para que quede embebido en el ejecutable.
+
+No hace falta que sea el mismo valor en todas las máquinas: cada quien corre su propia instancia local del backend, y esa instancia firma y valida sus propios tokens con su propia clave. Si te olvidás de este paso, el backend no arranca y tira el error `"Falta configurar Jwt:Key."` — es un aviso a propósito, para notar el problema apenas arranca en vez de que falle más adelante de forma confusa.
 
 ## Base de datos: migraciones
 

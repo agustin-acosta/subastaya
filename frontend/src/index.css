@@ -7,7 +7,7 @@
     --accent: #aa3bff;
     --accent-bg: rgba(170, 59, 255, 0.18);
     --accent-border: rgba(170, 59, 255, 0.6);
-    --navbar-bg-rgb: 12, 12, 20; /* #0c0c14 en formato r, g, b */
+    --navbar-bg-rgb: 12, 12, 20;
     --social-bg: rgba(27, 24, 38, 0.5);
     --shadow: rgba(0, 0, 0, 0.45) 0 10px 25px -5px, rgba(0, 0, 0, 0.3) 0 4px 10px -2px;
     --sans: system-ui, 'Segoe UI', Roboto, sans-serif;

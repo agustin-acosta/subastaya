@@ -15,9 +15,7 @@ function SubastaCard({ subasta }) {
     const badgeClass = `badge badge-${subasta.estado.toLowerCase()}`;
     const mostrarImagen = Boolean(subasta.urlImagen) && !imagenRota;
     const hayPujas = subasta.pujaActualMonto != null;
-    // El backend todavía no manda "cantidadPujas" hasta que apliques el
-    // cambio de SubastaListItemDto de más arriba; el "?? 0" evita que se
-    // vea "undefined pujas" mientras tanto.
+    
     const cantidadPujas = subasta.cantidadPujas ?? 0;
 
     return (

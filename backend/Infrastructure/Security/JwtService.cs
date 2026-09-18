@@ -20,7 +20,7 @@ public class JwtService : IJwtService
     public string Generar(Usuario usuario)
     {
         var seccionJwt = _configuration.GetSection("Jwt");
-        var clave = seccionJwt["Key"] ?? throw new InvalidOperationException("Falta configurar Jwt:Key en appsettings.json.");
+        var clave = seccionJwt["Key"] ?? throw new InvalidOperationException("Falta configurar Jwt:Key.");
         var issuer = seccionJwt["Issuer"];
         var audience = seccionJwt["Audience"];
         var minutos = int.Parse(seccionJwt["ExpiracionMinutos"] ?? "120");
