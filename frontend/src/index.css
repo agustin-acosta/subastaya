@@ -541,6 +541,43 @@ code {
         gap: 14px;
     }
 }
+.navbar-hamburguesa {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--text-h);
+    padding: 4px 6px;
+}
+
+@media (max-width: 720px) {
+    .navbar-hamburguesa {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .nav-links {
+        display: none;
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+        gap: 4px;
+        padding-top: 12px;
+        order: 3;
+    }
+
+        .nav-links.nav-links-abierto {
+            display: flex;
+        }
+
+        .nav-links a,
+        .nav-links .btn {
+            width: 100%;
+        }
+}
 
 .hero {
     text-align: center;
@@ -701,6 +738,10 @@ code {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 12px;
+}
+
+.tabla-wrap {
+    overflow-x: auto;
 }
 
 .tabla {

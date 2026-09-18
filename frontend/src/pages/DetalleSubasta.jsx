@@ -262,26 +262,28 @@ function DetalleSubasta() {
                 {pujas.length === 0 ? (
                     <p className="card-muted">Todavía no hay ofertas para esta subasta.</p>
                 ) : (
-                    <table className="tabla">
-                        <thead>
-                            <tr>
-                                <th>Postor</th>
-                                <th>Monto</th>
-                                <th>Fecha y hora</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {pujas.map((p, i) => (
-                                <tr key={i}>
-                                    <td>
-                                        {esMia(p) ? "Vos" : p.compradorSeudonimo}
-                                    </td>
-                                    <td>${p.monto.toLocaleString()}</td>
-                                    <td>{new Date(p.fechaPuja).toLocaleString()}</td>
+                    <div className="tabla-wrap">
+                        <table className="tabla">
+                            <thead>
+                                <tr>
+                                    <th>Postor</th>
+                                    <th>Monto</th>
+                                    <th>Fecha y hora</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {pujas.map((p, i) => (
+                                    <tr key={i}>
+                                        <td>
+                                            {esMia(p) ? "Vos" : p.compradorSeudonimo}
+                                        </td>
+                                        <td>${p.monto.toLocaleString()}</td>
+                                        <td>{new Date(p.fechaPuja).toLocaleString()}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
             </div>
         </div>

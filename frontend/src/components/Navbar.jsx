@@ -10,6 +10,7 @@ function Navbar() {
     const { sesion, logout } = useUser();
     const [scrolleado, setScrolleado] = useState(false);
     const [busqueda, setBusqueda] = useState("");
+    const [menuAbierto, setMenuAbierto] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -24,12 +25,22 @@ function Navbar() {
         e.preventDefault();
         const texto = busqueda.trim();
         navigate(texto ? `/?busqueda=${encodeURIComponent(texto)}` : "/");
+        setMenuAbierto(false);
+    }
+
+    function cerrarMenu() {
+        setMenuAbierto(false);
+    }
+
+    function handleLogout() {
+        cerrarMenu();
+        logout();
     }
 
     return (
         <div className={`navbar${scrolleado ? " navbar-scrolled" : ""}`}>
             <div className="navbar-inner">
-                <Link to="/" className="brand">
+                <Link to="/" className="brand" onClick={cerrarMenu}>
                     SubastaYa
                 </Link>
 
@@ -44,18 +55,28 @@ function Navbar() {
                     <button type="submit" aria-label="Buscar">🔍</button>
                 </form>
 
-                <div className="nav-links">
-                    <NavLink to="/" end className={claseLink}>Catálogo</NavLink>
-                    {sesion && <NavLink to="/crear" className={claseLink}>Publicar subasta</NavLink>}
-                    {sesion && <NavLink to="/mis-actividades" className={claseLink}>Mis actividades</NavLink>}
-                    {sesion && <NavLink to="/wallet" className={claseLink}>Mi billetera</NavLink>}
+                <button
+                    type="button"
+                    className="navbar-hamburguesa"
+                    aria-label={menuAbierto ? "Cerrar menú" : "Abrir menú"}
+                    aria-expanded={menuAbierto}
+                    onClick={() => setMenuAbierto((abierto) => !abierto)}
+                >
+                    {menuAbierto ? "✕" : "☰"}
+                </button>
+
+                <div className={`nav-links${menuAbierto ? " nav-links-abierto" : ""}`}>
+                    <NavLink to="/" end className={claseLink} onClick={cerrarMenu}>Catálogo</NavLink>
+                    {sesion && <NavLink to="/crear" className={claseLink} onClick={cerrarMenu}>Publicar subasta</NavLink>}
+                    {sesion && <NavLink to="/mis-actividades" className={claseLink} onClick={cerrarMenu}>Mis actividades</NavLink>}
+                    {sesion && <NavLink to="/wallet" className={claseLink} onClick={cerrarMenu}>Mi billetera</NavLink>}
                     {sesion ? (
                         <>
                             <span className="card-muted">{sesion.nombre}</span>
-                            <button className="btn btn-primary" onClick={logout}>Cerrar sesión</button>
+                            <button className="btn btn-primary" onClick={handleLogout}>Cerrar sesión</button>
                         </>
                     ) : (
-                        <NavLink to="/login" className={claseLink}>Iniciar sesión</NavLink>
+                        <NavLink to="/login" className={claseLink} onClick={cerrarMenu}>Iniciar sesión</NavLink>
                     )}
                 </div>
             </div>

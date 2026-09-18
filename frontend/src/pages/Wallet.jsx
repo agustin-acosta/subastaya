@@ -89,32 +89,34 @@ function Wallet() {
                 {movimientos.length === 0 ? (
                     <p className="card-muted">Todavía no tenés movimientos.</p>
                 ) : (
-                    <table className="tabla">
-                        <thead>
-                            <tr>
-                                <th>Fecha</th>
-                                <th>Tipo</th>
-                                <th>Monto</th>
-                                <th>Subasta</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {movimientos.map((m, i) => (
-                                <tr key={i}>
-                                    <td>{new Date(m.fecha).toLocaleString()}</td>
-                                    <td>{ETIQUETAS_TIPO[m.tipo] ?? m.tipo}</td>
-                                    <td>${m.monto.toLocaleString()}</td>
-                                    <td>
-                                        {m.subastaId ? (
-                                            <Link to={`/subastas/${m.subastaId}`}>#{m.subastaId}</Link>
-                                        ) : (
-                                            "-"
-                                        )}
-                                    </td>
+                    <div className="tabla-wrap">
+                        <table className="tabla">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Tipo</th>
+                                    <th>Monto</th>
+                                    <th>Subasta</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {movimientos.map((m, i) => (
+                                    <tr key={i}>
+                                        <td>{new Date(m.fecha).toLocaleString()}</td>
+                                        <td>{ETIQUETAS_TIPO[m.tipo] ?? m.tipo}</td>
+                                        <td>${m.monto.toLocaleString()}</td>
+                                        <td>
+                                            {m.subastaId ? (
+                                                <Link to={`/subastas/${m.subastaId}`}>#{m.subastaId}</Link>
+                                            ) : (
+                                                "-"
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
             </div>
         </div>
